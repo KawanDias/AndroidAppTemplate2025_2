@@ -1,8 +1,10 @@
 package com.ifpr.androidapptemplate.ui.home
 
+import android.content.ActivityNotFoundException
 import android.Manifest
 import android.content.pm.PackageManager
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -15,6 +17,7 @@ import android.widget.*
 import android.graphics.BitmapFactory
 import android.location.Geocoder
 import android.location.Location
+import android.net.Uri
 import android.os.Looper
 import androidx.core.app.ActivityCompat
 import androidx.appcompat.app.AppCompatDelegate
@@ -44,10 +47,14 @@ class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
 
+    private var lastKnownLocation: Location? = null
     private lateinit var currentAddressTextView: TextView
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
     private lateinit var locationRequest: LocationRequest
+
+    private lateinit var  btnOpenMaps: Button
+    private lateinit var  btnOpenWaze: Button
 
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1
@@ -69,8 +76,20 @@ class HomeFragment : Fragment() {
         val container = view.findViewById<LinearLayout>(R.id.itemContainer)
         carregarItensMarketplace(container)
 
+        btnOpenMaps = view.findViewById<Button>(R.id.btnOpenMaps)
+        btnOpenMaps.setOnClickListener {
+            openInGoogleMaps()
+        }
+
+        btnOpenWaze = view.findViewById<Button>(R.id.btnOpenWaze)
+        btnOpenWaze.setOnClickListener {
+            openInWaze()
+        }
+
         return view
     }
+
+
 
     private fun inicializaGerenciamentoLocalizacao(view: View) {
         currentAddressTextView = view.findViewById(R.id.currentAddressTextView)
@@ -158,6 +177,8 @@ class HomeFragment : Fragment() {
         val geocoder = Geocoder(requireContext(), Locale.getDefault())
         val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
 
+        lastKnownLocation = location
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val address = addresses?.firstOrNull()?.getAddressLine(0) ?: "Address not found"
@@ -216,4 +237,52 @@ class HomeFragment : Fragment() {
             }
         })
     }
+
+    private fun openInGoogleMaps() {
+        val location = lastKnownLocation
+        if (location == null) {
+            Toast.makeText(context, "Localização não disponível. Aguarde o GPS.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val uri = Uri.parse("geo:${location.latitude},${location.longitude}?q=${location.latitude},${location.longitude}(Minha Localização)")
+        val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+            setPackage("com.google.android.apps.maps")
+        }
+
+        try {
+            startActivity(intent)
+        } catch (e: ActivityNotFoundException) {
+            // Se o Google Maps não estiver instalado, abre Play Store
+            val playStoreUri = Uri.parse("market://details?id=com.google.android.apps.maps")
+            startActivity(Intent(Intent.ACTION_VIEW, playStoreUri))
+        }
+    }
+
+
+    private fun openInWaze() {
+        val location = lastKnownLocation
+        if (location == null) {
+            Toast.makeText(context, "Localização não disponível. Aguarde o GPS.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val uri = Uri.parse("waze://?ll=${location.latitude},${location.longitude}&navigate=yes")
+        val intent = Intent(Intent.ACTION_VIEW, uri)
+
+        try {
+            startActivity(intent)
+        } catch (e: ActivityNotFoundException) {
+            // Se o Waze não estiver instalado, abre o Google Maps como fallback
+            val mapsUri = Uri.parse("geo:${location.latitude},${location.longitude}?q=${location.latitude},${location.longitude}(Destino)")
+            val mapsIntent = Intent(Intent.ACTION_VIEW, mapsUri)
+            try {
+                startActivity(mapsIntent)
+            } catch (e: ActivityNotFoundException) {
+                Toast.makeText(context, "Nenhum aplicativo de navegação encontrado.", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+
 }
