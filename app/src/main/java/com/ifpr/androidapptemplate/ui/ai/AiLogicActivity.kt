@@ -3,6 +3,13 @@ package com.ifpr.androidapptemplate.ui.ai
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.ifpr.androidapptemplate.R
+import android.graphics.Bitmap
+import android.net.Uri
+import android.widget.ImageView
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.view.drawToBitmap
+import com.bumptech.glide.Glide
+
 
 class AiLogicActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
