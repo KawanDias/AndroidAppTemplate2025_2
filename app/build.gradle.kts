@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.implementation
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -41,7 +43,15 @@ android {
 
 dependencies {
 
+    // Dependências de Localização e Maps (NOVO)
+    // ESTA JÁ ESTAVA CORRETA:
     implementation("com.google.android.gms:play-services-location:21.3.0")
+
+    // CORRIGIDO: Agora usando parênteses e aspas duplas
+    implementation("com.google.android.gms:play-services-maps:18.2.0")
+    implementation("com.google.maps.android:android-maps-utils:3.1.0")
+
+    // Dependências do AndroidX e Material
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -51,6 +61,7 @@ dependencies {
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
 
+    // Dependências do Firebase
     implementation(libs.firebase.auth.ktx)
     implementation(libs.firebase.common.ktx)
     implementation(libs.firebase.database.ktx)
@@ -63,12 +74,15 @@ dependencies {
     implementation(libs.firebase.ai)
     implementation(libs.google.firebase.ai)
 
+    // Dependências de Imagens
     implementation(libs.glide)
 
+    // Dependências de Coroutines
     implementation(libs.jetbrains.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.play.services.location)
 
+    // Dependências de Teste
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

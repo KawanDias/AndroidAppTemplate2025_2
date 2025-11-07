@@ -45,6 +45,10 @@ import com.ifpr.androidapptemplate.R
 import com.ifpr.androidapptemplate.baseclasses.Item
 import com.ifpr.androidapptemplate.databinding.FragmentHomeBinding
 import com.ifpr.androidapptemplate.ui.ai.AiLogicActivity
+import com.ifpr.androidapptemplate.ui.server.ServerManagementActivity // NOVO IMPORT: CRUD Activity
+// IMPORT NOVO: Necessário para a navegação com o Navigation Component
+import androidx.navigation.fragment.findNavController
+
 
 class HomeFragment : Fragment() {
 
@@ -58,6 +62,10 @@ class HomeFragment : Fragment() {
 
     private lateinit var  btnOpenMaps: Button
     private lateinit var  btnOpenWaze: Button
+    private lateinit var btnManageServers: Button
+
+    // NOVO: Declaração do botão de rastreamento de professores
+    private lateinit var btnOpenTrackingMap: Button
 
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1
@@ -79,30 +87,47 @@ class HomeFragment : Fragment() {
         val container = view.findViewById<LinearLayout>(R.id.itemContainer)
         carregarItensMarketplace(container)
 
-    // Botão para abrir o Google Maps
-    btnOpenMaps = view.findViewById<Button>(R.id.btnOpenMaps)
-    btnOpenMaps.setOnClickListener {
-        openInGoogleMaps()
+        // Botão para abrir o Google Maps
+        btnOpenMaps = view.findViewById<Button>(R.id.btnOpenMaps)
+        btnOpenMaps.setOnClickListener {
+            openInGoogleMaps()
+        }
+
+        // Botão para abrir o Waze
+        btnOpenWaze = view.findViewById<Button>(R.id.btnOpenWaze)
+        btnOpenWaze.setOnClickListener {
+            openInWaze()
+        }
+
+        // BOTÃO PARA GERENCIAR PROFESSORES (CRUD)
+        btnManageServers = view.findViewById<Button>(R.id.btnManageServers)
+        btnManageServers.setOnClickListener {
+            val context = view.context
+            val intent = Intent(context, ServerManagementActivity::class.java)
+            context.startActivity(intent)
+        }
+
+        // NOVO CÓDIGO AQUI: Conexão do botão RASTREAR PROFESSORES
+        // 1. Assumindo que o ID do botão é `btnOpenTrackingMap`
+        btnOpenTrackingMap = view.findViewById<Button>(R.id.btnOpenTrackingMap)
+        btnOpenTrackingMap.setOnClickListener {
+            // 2. Chama a AÇÃO definida no mobile_navigation.xml
+            findNavController().navigate(R.id.action_navigation_home_to_trackingMapFragment)
+        }
+        // FIM DO NOVO CÓDIGO
+
+
+        // Botão flutuante de IA (do professor)
+        val fab = view.findViewById<FloatingActionButton>(R.id.fab_ai)
+
+        fab.setOnClickListener {
+            val context = view.context
+            val intent = Intent(context, AiLogicActivity::class.java)
+            context.startActivity(intent)
+        }
+
+        return view
     }
-
-    // Botão para abrir o Waze
-    btnOpenWaze = view.findViewById<Button>(R.id.btnOpenWaze)
-    btnOpenWaze.setOnClickListener {
-        openInWaze()
-    }
-
-    // Botão flutuante de IA (do professor)
-    val fab = view.findViewById<FloatingActionButton>(R.id.fab_ai)
-
-    fab.setOnClickListener {
-        val context = view.context
-        val intent = Intent(context, AiLogicActivity::class.java)
-        context.startActivity(intent)
-    }
-
-            return view
-    }
-
 
 
     private fun inicializaGerenciamentoLocalizacao(view: View) {
@@ -209,6 +234,10 @@ class HomeFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        // Removendo a atualização de localização quando o Fragment é destruído
+        if (::fusedLocationClient.isInitialized && ::locationCallback.isInitialized) {
+            fusedLocationClient.removeLocationUpdates(locationCallback)
+        }
         _binding = null
     }
 
@@ -281,19 +310,25 @@ class HomeFragment : Fragment() {
             return
         }
 
-        val uri = Uri.parse("waze://?ll=${location.latitude},${location.longitude}&navigate=yes")
-        val intent = Intent(Intent.ACTION_VIEW, uri)
+        val latitude = location.latitude
+        val longitude = location.longitude
 
+        // 1. Tenta abrir no WAZE
         try {
-            startActivity(intent)
+            val wazeUri = Uri.parse("waze://?ll=${latitude},${longitude}&navigate=yes")
+            val wazeIntent = Intent(Intent.ACTION_VIEW, wazeUri)
+            startActivity(wazeIntent)
         } catch (e: ActivityNotFoundException) {
-            // Se o Waze não estiver instalado, abre o Google Maps como fallback
-            val mapsUri = Uri.parse("geo:${location.latitude},${location.longitude}?q=${location.latitude},${location.longitude}(Destino)")
-            val mapsIntent = Intent(Intent.ACTION_VIEW, mapsUri)
+            // 2. Se o WAZE falhar, tenta o Google Maps (fallback mais robusto)
             try {
+                val mapsUri = Uri.parse("geo:${latitude},${longitude}?q=${latitude},${longitude}(Destino)")
+                val mapsIntent = Intent(Intent.ACTION_VIEW, mapsUri).apply {
+                    setPackage("com.google.android.apps.maps") // Garante que Maps seja o alvo
+                }
                 startActivity(mapsIntent)
             } catch (e: ActivityNotFoundException) {
-                Toast.makeText(context, "Nenhum aplicativo de navegação encontrado.", Toast.LENGTH_SHORT).show()
+                // 3. Se nenhum dos dois funcionar, mostra o erro final
+                Toast.makeText(context, "Nenhum aplicativo de navegação (Waze ou Maps) encontrado.", Toast.LENGTH_LONG).show()
             }
         }
     }

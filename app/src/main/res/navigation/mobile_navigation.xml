@@ -9,7 +9,19 @@
         android:id="@+id/navigation_home"
         android:name="com.ifpr.androidapptemplate.ui.home.HomeFragment"
         android:label="@string/title_home"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_home">
+
+        <action
+            android:id="@+id/action_navigation_home_to_trackingMapFragment"
+            app:destination="@id/trackingMapFragment" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/trackingMapFragment"
+        android:name="com.ifpr.androidapptemplate.ui.map.TrackingMapFragment"
+        android:label="Rastreamento de Professores"
+        tools:layout="@layout/fragment_tracking_map" />
 
     <fragment
         android:id="@+id/navigation_dashboard"
@@ -28,4 +40,5 @@
         android:name="com.ifpr.androidapptemplate.ui.usuario.PerfilUsuarioFragment"
         android:label="@string/title_profile"
         tools:layout="@layout/fragment_perfil_usuario" />
+
 </navigation>

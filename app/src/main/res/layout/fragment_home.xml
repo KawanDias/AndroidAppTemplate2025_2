@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -48,11 +49,36 @@
             android:layout_marginStart="8dp" />
     </LinearLayout>
 
+    <Button
+        android:id="@+id/btnManageServers"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Gerenciar Professores"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintTop_toBottomOf="@id/buttons_layout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <Button
+        android:id="@+id/btnOpenTrackingMap"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Rastrear Professores no Campus"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:backgroundTint="@color/design_default_color_secondary"
+        app:layout_constraintTop_toBottomOf="@id/btnManageServers"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <ScrollView
         android:id="@+id/scrollView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/buttons_layout"
+        app:layout_constraintTop_toBottomOf="@id/btnOpenTrackingMap"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent">
@@ -61,8 +87,8 @@
             android:id="@+id/itemContainer"
             android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-    </ScrollView>
+            android:layout_height="wrap_content"
+            android:paddingBottom="80dp"/> </ScrollView>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_ai"
@@ -70,11 +96,8 @@
         android:layout_height="wrap_content"
         android:contentDescription="Abrir IA"
         android:src="@drawable/google_gemini_icon"
-
         android:layout_marginEnd="16dp"
-
         android:layout_marginBottom="72dp"
-
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
