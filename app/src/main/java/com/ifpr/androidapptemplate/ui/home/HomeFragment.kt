@@ -1,9 +1,9 @@
 package com.ifpr.androidapptemplate.ui.home
 
+import androidx.navigation.fragment.findNavController
 import android.content.ActivityNotFoundException
 import android.Manifest
 import android.content.pm.PackageManager
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -20,60 +20,43 @@ import android.location.Location
 import android.net.Uri
 import android.os.Looper
 import androidx.core.app.ActivityCompat
-import androidx.appcompat.app.AppCompatDelegate
-import androidx.appcompat.widget.SwitchCompat
 import com.bumptech.glide.Glide
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
-import com.ifpr.androidapptemplate.MainActivity
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.*
+import kotlinx.coroutines.*
 import java.util.Locale
 import com.ifpr.androidapptemplate.R
 import com.ifpr.androidapptemplate.baseclasses.Item
 import com.ifpr.androidapptemplate.databinding.FragmentHomeBinding
 import com.ifpr.androidapptemplate.ui.ai.AiLogicActivity
-import com.ifpr.androidapptemplate.ui.server.ServerManagementActivity // NOVO IMPORT: CRUD Activity
-// IMPORT NOVO: Necessário para a navegação com o Navigation Component
-import androidx.navigation.fragment.findNavController
-
+import com.ifpr.androidapptemplate.ui.server.ImovelManagementActivity
 
 class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
+    private val binding get() = _binding!!
 
     private var lastKnownLocation: Location? = null
-    private lateinit var currentAddressTextView: TextView
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
     private lateinit var locationRequest: LocationRequest
 
-    private lateinit var  btnOpenMaps: Button
-    private lateinit var  btnOpenWaze: Button
+    private lateinit var currentAddressTextView: TextView
+    private lateinit var btnOpenMaps: Button
+    private lateinit var btnOpenWaze: Button
     private lateinit var btnManageServers: Button
-
-    // NOVO: Declaração do botão de rastreamento de professores
     private lateinit var btnOpenTrackingMap: Button
 
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1
     }
-
-    // This property is only valid between onCreateView and
-    // onDestroyView.
-    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -84,61 +67,50 @@ class HomeFragment : Fragment() {
 
         inicializaGerenciamentoLocalizacao(view)
 
-        val container = view.findViewById<LinearLayout>(R.id.itemContainer)
-        carregarItensMarketplace(container)
+        val containerItens = view.findViewById<LinearLayout>(R.id.itemContainer)
+        carregarImoveisUsuario(containerItens)
 
-        // Botão para abrir o Google Maps
-        btnOpenMaps = view.findViewById<Button>(R.id.btnOpenMaps)
-        btnOpenMaps.setOnClickListener {
-            openInGoogleMaps()
-        }
+        // Botão abrir Google Maps
+        btnOpenMaps = view.findViewById(R.id.btnOpenMaps)
+        btnOpenMaps.setOnClickListener { openInGoogleMaps() }
 
-        // Botão para abrir o Waze
-        btnOpenWaze = view.findViewById<Button>(R.id.btnOpenWaze)
-        btnOpenWaze.setOnClickListener {
-            openInWaze()
-        }
+        // Botão abrir Waze
+        btnOpenWaze = view.findViewById(R.id.btnOpenWaze)
+        btnOpenWaze.setOnClickListener { openInWaze() }
 
-        // BOTÃO PARA GERENCIAR PROFESSORES (CRUD)
-        btnManageServers = view.findViewById<Button>(R.id.btnManageServers)
+        // Botão Gerenciar Imóveis
+        btnManageServers = view.findViewById(R.id.btnManageServers)
         btnManageServers.setOnClickListener {
             val context = view.context
-            val intent = Intent(context, ServerManagementActivity::class.java)
+            val intent = Intent(context, ImovelManagementActivity::class.java)
             context.startActivity(intent)
         }
 
-        // NOVO CÓDIGO AQUI: Conexão do botão RASTREAR PROFESSORES
-        // 1. Assumindo que o ID do botão é `btnOpenTrackingMap`
-        btnOpenTrackingMap = view.findViewById<Button>(R.id.btnOpenTrackingMap)
+        // Botão Ver mapa de imóveis
+        btnOpenTrackingMap = view.findViewById(R.id.btnOpenTrackingMap)
         btnOpenTrackingMap.setOnClickListener {
-            // 2. Chama a AÇÃO definida no mobile_navigation.xml
-            findNavController().navigate(R.id.action_navigation_home_to_trackingMapFragment)
+            findNavController().navigate(R.id.action_navigation_home_to_imovelMapFragment)
         }
-        // FIM DO NOVO CÓDIGO
 
-
-        // Botão flutuante de IA (do professor)
+        // Botão flutuante IA
         val fab = view.findViewById<FloatingActionButton>(R.id.fab_ai)
-
         fab.setOnClickListener {
-            val context = view.context
-            val intent = Intent(context, AiLogicActivity::class.java)
-            context.startActivity(intent)
+            val intent = Intent(view.context, AiLogicActivity::class.java)
+            startActivity(intent)
         }
 
         return view
     }
 
-
     private fun inicializaGerenciamentoLocalizacao(view: View) {
         currentAddressTextView = view.findViewById(R.id.currentAddressTextView)
-
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 
         if (ActivityCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+            ) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
@@ -165,16 +137,17 @@ class HomeFragment : Fragment() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                getCurrentLocation()
-            } else {
-                Snackbar.make(
-                    requireView(),
-                    "Permission denied. Cannot access location.",
-                    Snackbar.LENGTH_LONG
-                ).show()
-            }
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE &&
+            grantResults.isNotEmpty() &&
+            grantResults[0] == PackageManager.PERMISSION_GRANTED
+        ) {
+            getCurrentLocation()
+        } else {
+            Snackbar.make(
+                requireView(),
+                "Permissão negada. Não é possível acessar a localização.",
+                Snackbar.LENGTH_LONG
+            ).show()
         }
     }
 
@@ -182,7 +155,8 @@ class HomeFragment : Fragment() {
         if (ActivityCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+            ) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
@@ -199,9 +173,8 @@ class HomeFragment : Fragment() {
         }
 
         locationRequest = LocationRequest.create().apply {
-            interval = 30000 // Intervalo em milissegundos para atualizacoes de localizacao
-            fastestInterval =
-                30000 // O menor intervalo de tempo para receber atualizacoes de localizacao
+            interval = 30000
+            fastestInterval = 30000
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }
 
@@ -215,76 +188,74 @@ class HomeFragment : Fragment() {
     private fun displayAddress(location: Location) {
         val geocoder = Geocoder(requireContext(), Locale.getDefault())
         val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
-
         lastKnownLocation = location
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val address = addresses?.firstOrNull()?.getAddressLine(0) ?: "Address not found"
+                val address = addresses?.firstOrNull()?.getAddressLine(0) ?: "Endereço não encontrado"
                 withContext(Dispatchers.Main) {
                     currentAddressTextView.text = address
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    currentAddressTextView.text = "Error: ${e.message}"
+                    currentAddressTextView.text = "Erro: ${e.message}"
                 }
             }
         }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        // Removendo a atualização de localização quando o Fragment é destruído
-        if (::fusedLocationClient.isInitialized && ::locationCallback.isInitialized) {
-            fusedLocationClient.removeLocationUpdates(locationCallback)
-        }
-        _binding = null
-    }
+    private fun carregarImoveisUsuario(container: LinearLayout) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val databaseRef = FirebaseDatabase.getInstance().getReference("itens").child(userId)
 
-    fun carregarItensMarketplace(container: LinearLayout) {
-        val databaseRef = FirebaseDatabase.getInstance().getReference("itens")
-
-        databaseRef.addListenerForSingleValueEvent(object : ValueEventListener {
+        databaseRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 container.removeAllViews()
 
-                for (userSnapshot in snapshot.children) {
-                    for (itemSnapshot in userSnapshot.children) {
-                        val item = itemSnapshot.getValue(Item::class.java) ?: continue
+                for (itemSnapshot in snapshot.children) {
+                    val item = itemSnapshot.getValue(Item::class.java) ?: continue
+                    val itemView = LayoutInflater.from(container.context)
+                        .inflate(R.layout.item_template, container, false)
 
-                        val itemView = LayoutInflater.from(container.context)
-                            .inflate(R.layout.item_template, container, false)
+                    val imageView = itemView.findViewById<ImageView>(R.id.item_image)
+                    val enderecoView = itemView.findViewById<TextView>(R.id.item_endereco)
 
-                        val imageView = itemView.findViewById<ImageView>(R.id.item_image)
-                        val enderecoView = itemView.findViewById<TextView>(R.id.item_endereco)
+                    enderecoView.text = item.endereco ?: "Sem endereço"
 
-                        enderecoView.text = "Endereço: ${item.endereco ?: "Não informado"}"
-
-                        if (!item.imageUrl.isNullOrEmpty()) {
-                            Glide.with(container.context).load(item.imageUrl).into(imageView)
-                        } else if (!item.base64Image.isNullOrEmpty()) {
-                            try {
-                                val bytes = Base64.decode(item.base64Image, Base64.DEFAULT)
-                                val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                                imageView.setImageBitmap(bitmap)
-                            } catch (_: Exception) {}
+                    // Exibe imagem corretamente
+                    if (!item.base64Image.isNullOrEmpty()) {
+                        try {
+                            val bytes = Base64.decode(item.base64Image, Base64.DEFAULT)
+                            val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                            imageView.setImageBitmap(bitmap)
+                        } catch (e: Exception) {
+                            imageView.setImageResource(R.drawable.placeholder_image)
                         }
-
-                        container.addView(itemView)
+                    } else {
+                        imageView.setImageResource(R.drawable.placeholder_image)
                     }
+
+                    container.addView(itemView)
+                }
+
+                if (snapshot.childrenCount == 0L) {
+                    val vazio = TextView(container.context)
+                    vazio.text = "Nenhum imóvel cadastrado."
+                    vazio.textAlignment = View.TEXT_ALIGNMENT_CENTER
+                    vazio.setPadding(0, 16, 0, 16)
+                    container.addView(vazio)
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Toast.makeText(container.context, "Erro ao carregar dados", Toast.LENGTH_SHORT).show()
+                Toast.makeText(container.context, "Erro ao carregar imóveis.", Toast.LENGTH_SHORT).show()
             }
         })
     }
 
     private fun openInGoogleMaps() {
-        val location = lastKnownLocation
-        if (location == null) {
-            Toast.makeText(context, "Localização não disponível. Aguarde o GPS.", Toast.LENGTH_SHORT).show()
+        val location = lastKnownLocation ?: run {
+            Toast.makeText(context, "Aguardando GPS...", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -292,46 +263,32 @@ class HomeFragment : Fragment() {
         val intent = Intent(Intent.ACTION_VIEW, uri).apply {
             setPackage("com.google.android.apps.maps")
         }
-
         try {
             startActivity(intent)
         } catch (e: ActivityNotFoundException) {
-            // Se o Google Maps não estiver instalado, abre Play Store
-            val playStoreUri = Uri.parse("market://details?id=com.google.android.apps.maps")
-            startActivity(Intent(Intent.ACTION_VIEW, playStoreUri))
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.google.android.apps.maps")))
         }
     }
 
-
     private fun openInWaze() {
-        val location = lastKnownLocation
-        if (location == null) {
-            Toast.makeText(context, "Localização não disponível. Aguarde o GPS.", Toast.LENGTH_SHORT).show()
+        val location = lastKnownLocation ?: run {
+            Toast.makeText(context, "Aguardando GPS...", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val latitude = location.latitude
-        val longitude = location.longitude
-
-        // 1. Tenta abrir no WAZE
         try {
-            val wazeUri = Uri.parse("waze://?ll=${latitude},${longitude}&navigate=yes")
-            val wazeIntent = Intent(Intent.ACTION_VIEW, wazeUri)
-            startActivity(wazeIntent)
+            val wazeUri = Uri.parse("waze://?ll=${location.latitude},${location.longitude}&navigate=yes")
+            startActivity(Intent(Intent.ACTION_VIEW, wazeUri))
         } catch (e: ActivityNotFoundException) {
-            // 2. Se o WAZE falhar, tenta o Google Maps (fallback mais robusto)
-            try {
-                val mapsUri = Uri.parse("geo:${latitude},${longitude}?q=${latitude},${longitude}(Destino)")
-                val mapsIntent = Intent(Intent.ACTION_VIEW, mapsUri).apply {
-                    setPackage("com.google.android.apps.maps") // Garante que Maps seja o alvo
-                }
-                startActivity(mapsIntent)
-            } catch (e: ActivityNotFoundException) {
-                // 3. Se nenhum dos dois funcionar, mostra o erro final
-                Toast.makeText(context, "Nenhum aplicativo de navegação (Waze ou Maps) encontrado.", Toast.LENGTH_LONG).show()
-            }
+            Toast.makeText(context, "Waze não encontrado", Toast.LENGTH_SHORT).show()
         }
     }
 
-
+    override fun onDestroyView() {
+        super.onDestroyView()
+        if (::fusedLocationClient.isInitialized && ::locationCallback.isInitialized) {
+            fusedLocationClient.removeLocationUpdates(locationCallback)
+        }
+        _binding = null
+    }
 }

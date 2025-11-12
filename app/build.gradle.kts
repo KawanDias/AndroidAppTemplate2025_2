@@ -1,5 +1,3 @@
-import org.gradle.kotlin.dsl.implementation
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -43,13 +41,8 @@ android {
 
 dependencies {
 
-    // Dependências de Localização e Maps (NOVO)
-    // ESTA JÁ ESTAVA CORRETA:
-    implementation("com.google.android.gms:play-services-location:21.3.0")
-
-    // CORRIGIDO: Agora usando parênteses e aspas duplas
-    implementation("com.google.android.gms:play-services-maps:18.2.0")
-    implementation("com.google.maps.android:android-maps-utils:3.1.0")
+    // Firebase BoM (IMPORTANTE: Garante compatibilidade de versões)
+    implementation(platform(libs.firebase.bom))
 
     // Dependências do AndroidX e Material
     implementation(libs.androidx.core.ktx)
@@ -63,21 +56,23 @@ dependencies {
 
     // Dependências do Firebase
     implementation(libs.firebase.auth.ktx)
-    implementation(libs.firebase.common.ktx)
     implementation(libs.firebase.database.ktx)
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.auth)
     implementation(libs.firebase.storage.ktx)
-    implementation(libs.play.services.auth)
     implementation(libs.firebase.firestore.ktx)
+    implementation(libs.firebase.common.ktx)
+    implementation(libs.firebase.auth)
+    implementation(libs.play.services.auth)
     implementation(libs.firebase.crashlytics.buildtools)
     implementation(libs.firebase.ai)
     implementation(libs.google.firebase.ai)
 
-    // Dependências de Imagens
-    implementation(libs.glide)
+    // Dependências de Localização e Maps (Versões explícitas)
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+    implementation("com.google.android.gms:play-services-maps:18.2.0")
+    implementation("com.google.maps.android:android-maps-utils:3.1.0") // Maps Utility
 
-    // Dependências de Coroutines
+    // Dependências de Imagens e Coroutines
+    implementation(libs.glide)
     implementation(libs.jetbrains.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.play.services.location)
@@ -86,5 +81,4 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-
 }

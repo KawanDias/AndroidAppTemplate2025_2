@@ -3,8 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/navigation_home">
+    app:startDestination="@id/navigation_home">
 
+    <!-- 🏠 Tela inicial - Home -->
     <fragment
         android:id="@+id/navigation_home"
         android:name="com.ifpr.androidapptemplate.ui.home.HomeFragment"
@@ -12,29 +13,32 @@
         tools:layout="@layout/fragment_home">
 
         <action
-            android:id="@+id/action_navigation_home_to_trackingMapFragment"
-            app:destination="@id/trackingMapFragment" />
-
+            android:id="@+id/action_navigation_home_to_imovelMapFragment"
+            app:destination="@id/imovelMapFragment" />
     </fragment>
 
-    <fragment
-        android:id="@+id/trackingMapFragment"
-        android:name="com.ifpr.androidapptemplate.ui.map.TrackingMapFragment"
-        android:label="Rastreamento de Professores"
-        tools:layout="@layout/fragment_tracking_map" />
-
+    <!-- 🏢 Lista de imóveis -->
     <fragment
         android:id="@+id/navigation_dashboard"
-        android:name="com.ifpr.androidapptemplate.ui.dashboard.DashboardFragment"
+        android:name="com.ifpr.androidapptemplate.ui.imovel.ImovelListFragment"
         android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_dashboard" />
+        tools:layout="@layout/fragment_imovel_list" />
 
+    <!-- 🗺️ Mapa de imóveis -->
+    <fragment
+        android:id="@+id/imovelMapFragment"
+        android:name="com.ifpr.androidapptemplate.ui.map.ImovelMapFragment"
+        android:label="Mapa de Imóveis"
+        tools:layout="@layout/fragment_imovel_map" />
+
+    <!-- 🔔 Notificações -->
     <fragment
         android:id="@+id/navigation_notifications"
         android:name="com.ifpr.androidapptemplate.ui.notifications.NotificationsFragment"
         android:label="@string/title_notifications"
         tools:layout="@layout/fragment_notifications" />
 
+    <!-- 👤 Perfil do usuário -->
     <fragment
         android:id="@+id/navigation_profile"
         android:name="com.ifpr.androidapptemplate.ui.usuario.PerfilUsuarioFragment"

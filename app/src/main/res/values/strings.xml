@@ -1,15 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Strings que o Android Studio deve ter gerado por padrão -->
+    <!-- App -->
     <string name="app_name">AndroidAppTemplate</string>
+
+    <!-- Títulos de navegação -->
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notificações</string>
+    <string name="title_profile">Perfil</string>
+    <string name="title_itens">Itens</string>
 
-
-    <!-- STRINGS ADICIONADAS PARA O HOMEFRAGMENT -->
+    <!-- Mensagens gerais -->
     <string name="text_location_permission_denied">Permissão de localização negada. O mapa não funcionará.</string>
     <string name="text_location_not_found">Localização não encontrada. Tente novamente ou ligue o GPS.</string>
 
-    <string name="title_notifications">Notifications</string>
-    <string name="title_profile">Profile</string>
-    <string name="title_itens">Itens</string>
+    <!-- Imóveis -->
+    <string name="imovel1_titulo">Casa moderna com piscina</string>
+    <string name="imovel1_preco">R$ 1.200.000 - Curitiba - PR</string>
+
+    <string name="imovel2_titulo">Apartamento no centro</string>
+    <string name="imovel2_preco">R$ 850.000 - São Paulo - SP</string>
 </resources>
