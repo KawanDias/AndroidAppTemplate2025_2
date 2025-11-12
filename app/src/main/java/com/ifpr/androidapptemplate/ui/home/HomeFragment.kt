@@ -68,7 +68,8 @@ class HomeFragment : Fragment() {
         inicializaGerenciamentoLocalizacao(view)
 
         val containerItens = view.findViewById<LinearLayout>(R.id.itemContainer)
-        carregarImoveisUsuario(containerItens)
+        // MUDANÇA AQUI: Agora carrega os imóveis marcados como DESTAQUES
+        carregarImoveisDestaques(containerItens)
 
         // Botão abrir Google Maps
         btnOpenMaps = view.findViewById(R.id.btnOpenMaps)
@@ -102,6 +103,71 @@ class HomeFragment : Fragment() {
         return view
     }
 
+    // FUNÇÃO ATUALIZADA PARA CARREGAR DO NÓ "destaques"
+    private fun carregarImoveisDestaques(container: LinearLayout) {
+        // Não precisamos de userId aqui, pois o nó /destaques é público
+        val databaseRef = FirebaseDatabase.getInstance().getReference("destaques")
+
+        databaseRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                container.removeAllViews()
+
+                for (itemSnapshot in snapshot.children) {
+                    val item = itemSnapshot.getValue(Item::class.java) ?: continue
+
+                    // Adicionamos o key (ID) ao objeto Item para referência futura
+                    item.key = itemSnapshot.key
+
+                    val itemView = LayoutInflater.from(container.context)
+                        .inflate(R.layout.item_template, container, false)
+
+                    val imageView = itemView.findViewById<ImageView>(R.id.item_image)
+                    val enderecoView = itemView.findViewById<TextView>(R.id.item_endereco)
+                    val precoView = itemView.findViewById<TextView>(R.id.item_preco)
+
+                    // Usando o campo 'titulo' ou 'endereco'
+                    enderecoView.text = item.titulo ?: item.endereco ?: "Sem Título/Endereço"
+                    precoView.text = "R$ ${String.format("%.2f", item.preco)}"
+
+                    // Exibe imagem corretamente
+                    if (!item.base64Image.isNullOrEmpty()) {
+                        try {
+                            val bytes = Base64.decode(item.base64Image, Base64.DEFAULT)
+                            val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                            imageView.setImageBitmap(bitmap)
+                        } catch (e: Exception) {
+                            // Se falhar o Base64, tenta o imageUrl (se existir)
+                            if (!item.imageUrl.isNullOrEmpty()) {
+                                Glide.with(requireContext()).load(item.imageUrl).into(imageView)
+                            } else {
+                                imageView.setImageResource(R.drawable.placeholder_image)
+                            }
+                        }
+                    } else if (!item.imageUrl.isNullOrEmpty()) {
+                        Glide.with(requireContext()).load(item.imageUrl).into(imageView)
+                    } else {
+                        imageView.setImageResource(R.drawable.placeholder_image)
+                    }
+
+                    container.addView(itemView)
+                }
+
+                if (snapshot.childrenCount == 0L) {
+                    val vazio = TextView(container.context)
+                    vazio.text = "Nenhum imóvel em destaque."
+                    vazio.textAlignment = View.TEXT_ALIGNMENT_CENTER
+                    vazio.setPadding(0, 16, 0, 16)
+                    container.addView(vazio)
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(container.context, "Erro ao carregar destaques: ${error.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+
+    // Métodos de localização e Waze/Maps permanecem inalterados
     private fun inicializaGerenciamentoLocalizacao(view: View) {
         currentAddressTextView = view.findViewById(R.id.currentAddressTextView)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
@@ -202,55 +268,6 @@ class HomeFragment : Fragment() {
                 }
             }
         }
-    }
-
-    private fun carregarImoveisUsuario(container: LinearLayout) {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        val databaseRef = FirebaseDatabase.getInstance().getReference("itens").child(userId)
-
-        databaseRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                container.removeAllViews()
-
-                for (itemSnapshot in snapshot.children) {
-                    val item = itemSnapshot.getValue(Item::class.java) ?: continue
-                    val itemView = LayoutInflater.from(container.context)
-                        .inflate(R.layout.item_template, container, false)
-
-                    val imageView = itemView.findViewById<ImageView>(R.id.item_image)
-                    val enderecoView = itemView.findViewById<TextView>(R.id.item_endereco)
-
-                    enderecoView.text = item.endereco ?: "Sem endereço"
-
-                    // Exibe imagem corretamente
-                    if (!item.base64Image.isNullOrEmpty()) {
-                        try {
-                            val bytes = Base64.decode(item.base64Image, Base64.DEFAULT)
-                            val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                            imageView.setImageBitmap(bitmap)
-                        } catch (e: Exception) {
-                            imageView.setImageResource(R.drawable.placeholder_image)
-                        }
-                    } else {
-                        imageView.setImageResource(R.drawable.placeholder_image)
-                    }
-
-                    container.addView(itemView)
-                }
-
-                if (snapshot.childrenCount == 0L) {
-                    val vazio = TextView(container.context)
-                    vazio.text = "Nenhum imóvel cadastrado."
-                    vazio.textAlignment = View.TEXT_ALIGNMENT_CENTER
-                    vazio.setPadding(0, 16, 0, 16)
-                    container.addView(vazio)
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Toast.makeText(container.context, "Erro ao carregar imóveis.", Toast.LENGTH_SHORT).show()
-            }
-        })
     }
 
     private fun openInGoogleMaps() {

@@ -1,26 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="8dp"
-    android:background="@drawable/card_background">
+    android:orientation="horizontal"
+    android:padding="12dp"
+    android:layout_marginBottom="8dp"
+    android:background="@drawable/card_background"
+    android:elevation="2dp"
+    android:gravity="center_vertical">
 
+    <!-- 1. IMAGEM -->
     <ImageView
         android:id="@+id/item_image"
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:scaleType="centerCrop"
-        android:layout_marginEnd="8dp"
-        android:background="#EFEFEF" />
+        android:layout_marginEnd="12dp"
+        android:background="#EFEFEF"
+        android:contentDescription="Foto do imóvel" />
 
-    <TextView
-        android:id="@+id/item_endereco"
+    <!-- 2. CONTAINER DE TEXTO (Vertical) -->
+    <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:textColor="#333"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:gravity="center_vertical" />
+        android:orientation="vertical">
+
+        <!-- TÍTULO/ENDEREÇO -->
+        <TextView
+            android:id="@+id/item_endereco"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#333333"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:text="Título do Imóvel ou Endereço Completo" />
+
+        <!-- PREÇO (ADICIONADO AQUI) -->
+        <TextView
+            android:id="@+id/item_preco"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/purple_700"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:text="R$ 0,00" />
+
+    </LinearLayout>
 </LinearLayout>
