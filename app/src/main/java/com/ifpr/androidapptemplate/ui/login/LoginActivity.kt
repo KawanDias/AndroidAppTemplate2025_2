@@ -1,6 +1,9 @@
 package com.ifpr.androidapptemplate.ui.login
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -8,6 +11,8 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -35,6 +40,7 @@ class LoginActivity : AppCompatActivity() {
     companion object {
         private const val RC_SIGN_IN = 9001
         private const val TAG = "LoginActivity"
+        private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 1002
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,6 +57,13 @@ class LoginActivity : AppCompatActivity() {
         loginButton = findViewById(R.id.button_login)
         registerLink = findViewById(R.id.registerLink)
         btnGoogleSignIn = findViewById(R.id.btnGoogleSignIn)
+
+        // Adicionado: Lógica para pedir permissão de notificação em Android 13+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), NOTIFICATION_PERMISSION_REQUEST_CODE)
+            }
+        }
 
         registerLink.setOnClickListener {
             val intent = Intent(applicationContext, CadastroUsuarioActivity::class.java)
@@ -132,6 +145,18 @@ class LoginActivity : AppCompatActivity() {
             } catch (e: ApiException) {
                 Log.w(TAG, "Google sign in failed", e)
                 Toast.makeText(this, "Falha no login com o Google.", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    // Adicionado: Lida com a resposta do pedido de permissão
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == NOTIFICATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Permissão para notificações concedida.", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Permissão negada. As notificações podem não funcionar.", Toast.LENGTH_LONG).show()
             }
         }
     }
