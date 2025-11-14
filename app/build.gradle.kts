@@ -64,6 +64,7 @@ dependencies {
     implementation(libs.play.services.auth)
     implementation(libs.firebase.crashlytics.buildtools)
     implementation(libs.firebase.ai)
+    implementation(libs.firebase.messaging.ktx)
     implementation(libs.google.firebase.ai)
 
     // Dependências de Localização e Maps (Versões explícitas)
