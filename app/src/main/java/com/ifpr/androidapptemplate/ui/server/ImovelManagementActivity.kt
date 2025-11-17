@@ -207,10 +207,12 @@ class ImovelManagementActivity : AppCompatActivity() {
             .addOnSuccessListener { finishWithMessage("Imóvel atualizado com sucesso!") }
             .addOnFailureListener { e -> finishWithMessage("Erro ao atualizar: ${e.message}") }
     }
-    
+
     private fun finishWithMessage(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
-        finish()
+        runOnUiThread {
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+            finish()
+        }
     }
 
     // --- Métodos de localização, permissão e imagem (sem alterações) ---
