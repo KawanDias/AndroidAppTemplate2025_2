@@ -38,7 +38,7 @@
             android:ellipsize="end"
             android:text="Título do Imóvel ou Endereço Completo" />
 
-        <!-- PREÇO (ADICIONADO AQUI) -->
+        <!-- PREÇO -->
         <TextView
             android:id="@+id/item_preco"
             android:layout_width="match_parent"
@@ -48,6 +48,35 @@
             android:textSize="18sp"
             android:textStyle="bold"
             android:text="R$ 0,00" />
+
+        <!-- BOTÕES DE AÇÃO (CRUD) -->
+        <LinearLayout
+            android:id="@+id/item_actions_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"
+            android:visibility="gone">  <!-- Começa invisível por padrão -->
+
+            <Button
+                android:id="@+id/btn_editar_imovel"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:text="Editar"
+                android:layout_marginEnd="4dp"/>
+
+            <Button
+                android:id="@+id/btn_excluir_imovel"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:text="Excluir"
+                android:textColor="@android:color/holo_red_light"
+                android:layout_marginStart="4dp"/>
+        </LinearLayout>
 
     </LinearLayout>
 </LinearLayout>
