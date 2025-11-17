@@ -77,6 +77,9 @@ dependencies {
     implementation(libs.jetbrains.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.play.services.location)
+    
+    // Dependências para edição e visualização de imagem
+    implementation("de.hdodenhof:circleimageview:3.1.0")
 
     // Dependências de Teste
     testImplementation(libs.junit)
