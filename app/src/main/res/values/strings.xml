@@ -5,7 +5,7 @@
 
     <!-- Títulos de navegação -->
     <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
+    <string name="title_imoveis">Imóveis</string>
     <string name="title_notifications">Notificações</string>
     <string name="title_profile">Perfil</string>
     <string name="title_itens">Itens</string>
