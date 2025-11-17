@@ -31,6 +31,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import kotlinx.coroutines.*
+import java.text.NumberFormat
 import java.util.Locale
 import com.ifpr.androidapptemplate.R
 import com.ifpr.androidapptemplate.baseclasses.Item
@@ -127,7 +128,20 @@ class HomeFragment : Fragment() {
 
                     // Usando o campo 'titulo' ou 'endereco'
                     enderecoView.text = item.titulo ?: item.endereco ?: "Sem Título/Endereço"
-                    precoView.text = "R$ ${String.format("%.2f", item.preco)}"
+
+                    // ===== CORREÇÃO PARA FORMATAÇÃO DO PREÇO (SEM CENTAVOS PARA VALORES INTEIROS) =====
+                    val preco = item.preco ?: 0.0
+                    val formatadorMoeda = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
+
+                    // Se o valor for inteiro, não mostra os centavos ",00"
+                    if (preco == preco.toLong().toDouble()) {
+                        formatadorMoeda.maximumFractionDigits = 0
+                    } else {
+                        formatadorMoeda.maximumFractionDigits = 2 // Mantém para valores com centavos
+                    }
+
+                    precoView.text = formatadorMoeda.format(preco)
+
 
                     // Exibe imagem corretamente
                     if (!item.base64Image.isNullOrEmpty()) {

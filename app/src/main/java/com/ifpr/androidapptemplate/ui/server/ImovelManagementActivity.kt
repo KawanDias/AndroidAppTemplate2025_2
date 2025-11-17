@@ -195,8 +195,12 @@ class ImovelManagementActivity : AppCompatActivity() {
             return
         }
 
-        val precoDouble = precoStr.toDoubleOrNull() ?: run {
-            Toast.makeText(this, "Preço inválido. Use apenas números (ex: 150000.00).", Toast.LENGTH_LONG).show()
+        // ===== CORREÇÃO PARA O PREÇO =====
+        // Remove os pontos de milhar e substitui a vírgula do decimal por um ponto.
+        val cleanedPrecoStr = precoStr.replace(".", "").replace(",", ".")
+
+        val precoDouble = cleanedPrecoStr.toDoubleOrNull() ?: run {
+            Toast.makeText(this, "Preço inválido. Use apenas números (ex: 250000,00).", Toast.LENGTH_LONG).show()
             return
         }
 
@@ -213,9 +217,6 @@ class ImovelManagementActivity : AppCompatActivity() {
 
         val endereco = getAddressFromLocation(location)
 
-        // ===== CORREÇÃO APLICADA AQUI =====
-        // A referência agora aponta para um nó específico do usuário (imoveis/{userId})
-        // Isso garante que a regra de segurança do Firebase seja respeitada.
         val imoveisRef = FirebaseDatabase.getInstance().getReference("imoveis").child(uid)
         val newImovelRef = imoveisRef.push()
         val imovelId = newImovelRef.key ?: UUID.randomUUID().toString()
