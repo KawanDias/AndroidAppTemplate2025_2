@@ -4,35 +4,41 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.ifpr.androidapptemplate.databinding.FragmentNotificationsBinding
 
 class NotificationsFragment : Fragment() {
 
     private var _binding: FragmentNotificationsBinding? = null
-
-    // This property is only valid between onCreateView and
-    // onDestroyView.
     private val binding get() = _binding!!
+
+    private lateinit var notificationsViewModel: NotificationsViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val notificationsViewModel =
-            ViewModelProvider(this).get(NotificationsViewModel::class.java)
-
+        notificationsViewModel = ViewModelProvider(this).get(NotificationsViewModel::class.java)
         _binding = FragmentNotificationsBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        val textView: TextView = binding.textNotifications
-        notificationsViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
-        }
+        setupRecyclerView()
+
         return root
+    }
+
+    private fun setupRecyclerView() {
+        val recyclerView = binding.notificationsRecyclerView
+        recyclerView.layoutManager = LinearLayoutManager(context)
+
+        notificationsViewModel.notifications.observe(viewLifecycleOwner) { notifications ->
+            if (notifications != null) {
+                recyclerView.adapter = NotificationAdapter(notifications)
+            }
+        }
     }
 
     override fun onDestroyView() {

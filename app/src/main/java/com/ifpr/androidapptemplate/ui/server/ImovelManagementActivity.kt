@@ -30,6 +30,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.ifpr.androidapptemplate.R
 import com.ifpr.androidapptemplate.baseclasses.Item
+import com.ifpr.androidapptemplate.model.Notification
 import java.io.ByteArrayOutputStream
 import java.text.NumberFormat
 import java.util.Locale
@@ -91,7 +92,6 @@ class ImovelManagementActivity : AppCompatActivity() {
         btnSalvar.text = "Atualizar"
 
         imovelId?.let { id ->
-            // Em modo de edição, carregamos os dados do nó 'destaques' que é público
             val databaseRef = FirebaseDatabase.getInstance().getReference("destaques").child(id)
             databaseRef.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
@@ -113,7 +113,6 @@ class ImovelManagementActivity : AppCompatActivity() {
         formatador.minimumFractionDigits = 2
         edtPreco.setText(formatador.format(item.preco ?: 0.0))
 
-        // Carrega a imagem existente
         if (!item.base64Image.isNullOrEmpty()) {
             try {
                 val bytes = Base64.decode(item.base64Image, Base64.DEFAULT)
@@ -133,10 +132,7 @@ class ImovelManagementActivity : AppCompatActivity() {
     }
 
     private fun salvarImovel() {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run {
-            Toast.makeText(this, "Usuário não autenticado.", Toast.LENGTH_SHORT).show()
-            return
-        }
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
         val titulo = edtTitulo.text.toString().trim()
         val precoStr = edtPreco.text.toString().trim()
@@ -168,7 +164,8 @@ class ImovelManagementActivity : AppCompatActivity() {
         }
         val endereco = getAddressFromLocation(location)
 
-        val imoveisRef = FirebaseDatabase.getInstance().getReference("imoveis").child(uid)
+        val db = FirebaseDatabase.getInstance()
+        val imoveisRef = db.getReference("imoveis").child(uid)
         val newImovelId = imoveisRef.push().key ?: UUID.randomUUID().toString()
 
         val imovel = Item(
@@ -176,11 +173,31 @@ class ImovelManagementActivity : AppCompatActivity() {
             latitude = location.latitude, longitude = location.longitude, base64Image = base64Image
         )
 
-        val destaquesRef = FirebaseDatabase.getInstance().getReference("destaques").child(newImovelId)
+        val imovelSaveTask = imoveisRef.child(newImovelId).setValue(imovel)
+        val destaqueSaveTask = db.getReference("destaques").child(newImovelId).setValue(imovel)
 
-        Tasks.whenAll(destaquesRef.setValue(imovel), imoveisRef.child(newImovelId).setValue(imovel))
-            .addOnSuccessListener { finishWithMessage("Imóvel cadastrado com sucesso!") }
-            .addOnFailureListener { e -> finishWithMessage("Erro ao cadastrar: ${e.message}") }
+        Tasks.whenAll(imovelSaveTask, destaqueSaveTask).addOnSuccessListener {
+            // Após salvar o imóvel, cria a notificação
+            criarNotificacao(titulo, preco)
+            finishWithMessage("Imóvel cadastrado com sucesso!")
+        }.addOnFailureListener { e ->
+            finishWithMessage("Erro ao cadastrar: ${e.message}")
+        }
+    }
+
+    private fun criarNotificacao(tituloImovel: String, precoImovel: Double) {
+        val notificationsRef = FirebaseDatabase.getInstance().getReference("notifications")
+        val newNotificationId = notificationsRef.push().key ?: return
+
+        val precoFormatado = NumberFormat.getCurrencyInstance(Locale("pt", "BR")).format(precoImovel)
+
+        val notification = Notification(
+            id = newNotificationId,
+            content = tituloImovel,
+            price = precoFormatado
+        )
+
+        notificationsRef.child(newNotificationId).setValue(notification)
     }
 
     private fun atualizarImovel(uid: String, titulo: String, tipo: String, preco: Double) {
@@ -189,33 +206,26 @@ class ImovelManagementActivity : AppCompatActivity() {
         val updates = mutableMapOf<String, Any?>(
             "titulo" to titulo,
             "tipo" to tipo,
-            "preco" to preco
+            "preco" to preco,
+            "base64Image" to if (base64Image != null) base64Image else currentImovel?.base64Image
         )
-        // Se uma nova imagem foi selecionada, adiciona aos updates
-        if (base64Image != null) {
-            updates["base64Image"] = base64Image
-        }
 
         val db = FirebaseDatabase.getInstance()
         val imovelRef = db.getReference("imoveis").child(uid).child(id)
         val destaqueRef = db.getReference("destaques").child(id)
 
-        val imovelUpdateTask = imovelRef.updateChildren(updates)
-        val destaqueUpdateTask = destaqueRef.updateChildren(updates)
-
-        Tasks.whenAll(imovelUpdateTask, destaqueUpdateTask)
+        Tasks.whenAll(imovelRef.updateChildren(updates), destaqueRef.updateChildren(updates))
             .addOnSuccessListener { finishWithMessage("Imóvel atualizado com sucesso!") }
             .addOnFailureListener { e -> finishWithMessage("Erro ao atualizar: ${e.message}") }
     }
-
+    
     private fun finishWithMessage(message: String) {
         runOnUiThread {
             Toast.makeText(this, message, Toast.LENGTH_LONG).show()
             finish()
         }
     }
-
-    // --- Métodos de localização, permissão e imagem (sem alterações) ---
+    
     private fun requestLocationPermission() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION_PERMISSION)
