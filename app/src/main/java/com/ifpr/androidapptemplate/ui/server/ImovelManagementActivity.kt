@@ -213,7 +213,10 @@ class ImovelManagementActivity : AppCompatActivity() {
 
         val endereco = getAddressFromLocation(location)
 
-        val imoveisRef = FirebaseDatabase.getInstance().getReference("imoveis")
+        // ===== CORREÇÃO APLICADA AQUI =====
+        // A referência agora aponta para um nó específico do usuário (imoveis/{userId})
+        // Isso garante que a regra de segurança do Firebase seja respeitada.
+        val imoveisRef = FirebaseDatabase.getInstance().getReference("imoveis").child(uid)
         val newImovelRef = imoveisRef.push()
         val imovelId = newImovelRef.key ?: UUID.randomUUID().toString()
 
