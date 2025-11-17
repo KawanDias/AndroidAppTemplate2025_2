@@ -6,9 +6,6 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -17,24 +14,19 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.SignInButton
 import com.google.android.gms.common.api.ApiException
-import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.ifpr.androidapptemplate.MainActivity
 import com.ifpr.androidapptemplate.R
+import com.ifpr.androidapptemplate.databinding.ActivityLoginBinding
 import com.ifpr.androidapptemplate.ui.usuario.CadastroUsuarioActivity
 
 class LoginActivity : AppCompatActivity() {
 
-    private lateinit var emailEditText: EditText
-    private lateinit var passwordEditText: EditText
-    private lateinit var loginButton: Button
-    private lateinit var registerLink: TextView
+    private lateinit var binding: ActivityLoginBinding
     private lateinit var firebaseAuth: FirebaseAuth
-    private lateinit var btnGoogleSignIn: SignInButton
     private lateinit var googleSignInClient: GoogleSignInClient
 
     companion object {
@@ -45,34 +37,25 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
-
-        // Não é necessário inicializar o FirebaseApp aqui se já estiver configurado na classe Application
-        // FirebaseApp.initializeApp(this)
+        binding = ActivityLoginBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         firebaseAuth = FirebaseAuth.getInstance()
 
-        emailEditText = findViewById(R.id.edit_text_email)
-        passwordEditText = findViewById(R.id.edit_text_password)
-        loginButton = findViewById(R.id.button_login)
-        registerLink = findViewById(R.id.registerLink)
-        btnGoogleSignIn = findViewById(R.id.btnGoogleSignIn)
-
-        // Adicionado: Lógica para pedir permissão de notificação em Android 13+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), NOTIFICATION_PERMISSION_REQUEST_CODE)
             }
         }
 
-        registerLink.setOnClickListener {
+        binding.registerLink.setOnClickListener {
             val intent = Intent(applicationContext, CadastroUsuarioActivity::class.java)
             startActivity(intent)
         }
 
-        loginButton.setOnClickListener {
-            val email = emailEditText.text.toString().trim()
-            val password = passwordEditText.text.toString().trim()
+        binding.buttonLogin.setOnClickListener {
+            val email = binding.editTextEmail.text.toString().trim()
+            val password = binding.editTextPassword.text.toString().trim()
             if (email.isNotEmpty() && password.isNotEmpty()) {
                 signIn(email, password)
             } else {
@@ -87,7 +70,7 @@ class LoginActivity : AppCompatActivity() {
 
         googleSignInClient = GoogleSignIn.getClient(this, gso)
 
-        btnGoogleSignIn.setOnClickListener {
+        binding.btnGoogleSignIn.setOnClickListener {
             signInGoogle()
         }
     }
