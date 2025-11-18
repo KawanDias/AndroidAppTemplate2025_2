@@ -28,11 +28,11 @@ class ImovelListFragment : Fragment() {
 
         // Lista simulada de imóveis disponíveis
         imoveisList = listOf(
-            Imovel("Casa moderna com piscina", "R$ 1.200.000 - Curitiba - PR", R.drawable.sample_house1),
-            Imovel("Apartamento no centro", "R$ 850.000 - São Paulo - SP", R.drawable.sample_house2),
-            Imovel("Casa de campo aconchegante", "R$ 690.000 - Gramado - RS", R.drawable.sample_house3),
-            Imovel("Cobertura de luxo", "R$ 2.450.000 - Rio de Janeiro - RJ", R.drawable.sample_house4),
-            Imovel("Studio compacto e moderno", "R$ 450.000 - Florianópolis - SC", R.drawable.sample_house5)
+            Imovel(titulo = "Casa moderna com piscina", preco = 1200000.0, endereco = "Curitiba - PR", quartos = 4, banheiros = 3, metragem = 300.0, tipo = "Casa"),
+            Imovel(titulo = "Apartamento no centro", preco = 850000.0, endereco = "São Paulo - SP", quartos = 3, banheiros = 2, metragem = 150.0, tipo = "Apartamento"),
+            Imovel(titulo = "Casa de campo aconchegante", preco = 690000.0, endereco = "Gramado - RS", quartos = 2, banheiros = 2, metragem = 180.0, tipo = "Casa"),
+            Imovel(titulo = "Cobertura de luxo", preco = 2450000.0, endereco = "Rio de Janeiro - RJ", quartos = 5, banheiros = 5, metragem = 500.0, tipo = "Cobertura"),
+            Imovel(titulo = "Studio compacto e moderno", preco = 450000.0, endereco = "Florianópolis - SC", quartos = 1, banheiros = 1, metragem = 50.0, tipo = "Studio")
         )
 
         adapter = ImovelAdapter(imoveisList)

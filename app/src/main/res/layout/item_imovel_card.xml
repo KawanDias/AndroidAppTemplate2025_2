@@ -20,10 +20,21 @@
             android:background="@android:color/darker_gray" />
 
         <TextView
+            android:id="@+id/txtModalidade"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="8dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="8dp"
+            android:text="Venda/Aluguel"
+            android:textAppearance="?attr/textAppearanceCaption" />
+
+        <TextView
             android:id="@+id/txtTitulo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="8dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
             android:text="Título do Imóvel"
             android:textAppearance="?attr/textAppearanceHeadline6" />
 
@@ -33,9 +44,27 @@
             android:layout_height="wrap_content"
             android:paddingStart="8dp"
             android:paddingEnd="8dp"
-            android:paddingBottom="8dp"
             android:text="R$ 0,00"
             android:textAppearance="?attr/textAppearanceBody1" />
+
+        <TextView
+            android:id="@+id/txtEndereco"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:text="Endereço"
+            android:textAppearance="?attr/textAppearanceBody2" />
+
+        <TextView
+            android:id="@+id/txtDetalhes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android.paddingBottom="8dp"
+            android:text="Quartos - Banheiros - Metragem"
+            android:textAppearance="?attr/textAppearanceBody2" />
 
     </LinearLayout>
 

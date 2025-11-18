@@ -38,20 +38,119 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
-        <!-- Campo Tipo do Imóvel -->
-        <EditText
-            android:id="@+id/edt_imovel_tipo"
+        <!-- Spinner Modalidade (Venda/Aluguel) -->
+        <Spinner
+            android:id="@+id/spinner_imovel_modalidade"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_marginHorizontal="16dp"
             android:layout_marginTop="8dp"
-            android:hint="Tipo do Imóvel (Casa, Apartamento...)"
-            android:inputType="textCapWords"
             app:layout_constraintTop_toBottomOf="@id/edt_imovel_preco"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
-        <!-- IMAGEM PREVIEW (NOVO CAMPO) -->
+        <!-- Campo Tipo do Imóvel (Spinner) -->
+        <Spinner
+            android:id="@+id/spinner_imovel_tipo"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@id/spinner_imovel_modalidade"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <!-- Campo CEP -->
+        <EditText
+            android:id="@+id/edt_imovel_cep"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:hint="CEP"
+            android:inputType="number"
+            app:layout_constraintTop_toBottomOf="@id/spinner_imovel_tipo"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btn_buscar_cep"/>
+
+        <!-- Botão Buscar CEP -->
+        <Button
+            android:id="@+id/btn_buscar_cep"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:text="Buscar"
+            app:layout_constraintTop_toTopOf="@+id/edt_imovel_cep"
+            app:layout_constraintBottom_toBottomOf="@+id/edt_imovel_cep"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <!-- Campo Endereço do Imóvel -->
+        <EditText
+            android:id="@+id/edt_imovel_endereco"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="8dp"
+            android:hint="Endereço do Imóvel"
+            android:inputType="text"
+            app:layout_constraintTop_toBottomOf="@id/edt_imovel_cep"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <!-- Campo Número do Imóvel -->
+        <EditText
+            android:id="@+id/edt_imovel_numero"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="8dp"
+            android:hint="Número"
+            android:inputType="number"
+            app:layout_constraintTop_toBottomOf="@id/edt_imovel_endereco"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <!-- Campo Número de Quartos -->
+        <EditText
+            android:id="@+id/edt_imovel_quartos"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="8dp"
+            android:hint="Número de Quartos"
+            android:inputType="number"
+            app:layout_constraintTop_toBottomOf="@id/edt_imovel_numero"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <!-- Campo Número de Banheiros -->
+        <EditText
+            android:id="@+id/edt_imovel_banheiros"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="8dp"
+            android:hint="Número de Banheiros"
+            android:inputType="number"
+            app:layout_constraintTop_toBottomOf="@id/edt_imovel_quartos"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <!-- Campo Metragem do Imóvel -->
+        <EditText
+            android:id="@+id/edt_imovel_metragem"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="8dp"
+            android:hint="Metragem (m²)"
+            android:inputType="numberDecimal"
+            app:layout_constraintTop_toBottomOf="@id/edt_imovel_banheiros"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <!-- IMAGEM PREVIEW -->
         <ImageView
             android:id="@+id/img_imovel_preview"
             android:layout_width="0dp"
@@ -63,9 +162,9 @@
             android:contentDescription="Prévia da foto do imóvel"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/edt_imovel_tipo" />
+            app:layout_constraintTop_toBottomOf="@+id/edt_imovel_metragem" />
 
-        <!-- BOTÃO SELECIONAR IMAGEM (NOVO CAMPO) -->
+        <!-- BOTÃO SELECIONAR IMAGEM -->
         <Button
             android:id="@+id/btn_select_photo"
             android:layout_width="0dp"
@@ -75,7 +174,20 @@
             android:text="Selecionar Foto do Imóvel"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/img_imovel_preview" />
+            app:layout_constraintTop_toBottomOf="@id/img_imovel_preview" />
+
+        <!-- Botão Ver no Mapa -->
+        <Button
+            android:id="@+id/btn_ver_mapa"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Ver no Mapa"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="8dp"
+            style="?attr/materialButtonOutlinedStyle"
+            app:layout_constraintTop_toBottomOf="@id/btn_select_photo"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
 
         <!-- Botão Salvar Imóvel -->
         <Button
@@ -84,8 +196,8 @@
             android:layout_height="wrap_content"
             android:text="Salvar Imóvel"
             android:layout_marginHorizontal="16dp"
-            android:layout_marginTop="24dp"
-            app:layout_constraintTop_toBottomOf="@id/btn_select_photo"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@id/btn_ver_mapa"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 

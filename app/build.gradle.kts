@@ -81,6 +81,9 @@ dependencies {
     // Dependências para edição e visualização de imagem
     implementation("de.hdodenhof:circleimageview:3.1.0")
 
+    // Dependência para requisições de rede (CEP)
+    implementation("com.android.volley:volley:1.2.1")
+
     // Dependências de Teste
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
