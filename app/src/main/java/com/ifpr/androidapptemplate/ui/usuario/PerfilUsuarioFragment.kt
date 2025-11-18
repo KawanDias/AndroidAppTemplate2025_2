@@ -15,8 +15,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -25,7 +27,9 @@ import com.google.firebase.database.*
 import com.ifpr.androidapptemplate.R
 import com.ifpr.androidapptemplate.baseclasses.Usuario
 import com.ifpr.androidapptemplate.databinding.FragmentPerfilUsuarioBinding
+import com.ifpr.androidapptemplate.model.Imovel
 import com.ifpr.androidapptemplate.ui.login.LoginActivity
+import com.ifpr.androidapptemplate.ui.server.ImovelManagementActivity
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 
@@ -35,9 +39,13 @@ class PerfilUsuarioFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var usersReference: DatabaseReference
+    private lateinit var imoveisReference: DatabaseReference
     private lateinit var auth: FirebaseAuth
 
     private var selectedImageBase64: String? = null
+
+    private lateinit var meusImoveisAdapter: MeusImoveisAdapter
+    private val imoveisList = mutableListOf<Imovel>()
 
     private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
@@ -103,8 +111,6 @@ class PerfilUsuarioFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         auth = FirebaseAuth.getInstance()
-        usersReference = FirebaseDatabase.getInstance().getReference("users")
-
         val currentUser = auth.currentUser
         if (currentUser == null) {
             if (isAdded) {
@@ -113,9 +119,14 @@ class PerfilUsuarioFragment : Fragment() {
             }
             return
         }
+        
+        usersReference = FirebaseDatabase.getInstance().getReference("users")
+        imoveisReference = FirebaseDatabase.getInstance().getReference("imoveis")
 
         setupUI(currentUser)
         loadUserProfile(currentUser)
+        setupRecyclerView()
+        fetchMeusImoveis(currentUser.uid)
     }
 
     private fun setupUI(currentUser: FirebaseUser) {
@@ -126,6 +137,79 @@ class PerfilUsuarioFragment : Fragment() {
         binding.userProfileImageView.setOnClickListener { openGallery() }
         binding.atualizarButton.setOnClickListener { updateUserProfile() }
         binding.sairButton.setOnClickListener { signOut() }
+    }
+
+    private fun setupRecyclerView() {
+        meusImoveisAdapter = MeusImoveisAdapter(
+            imoveisList,
+            onEditClick = { imovel ->
+                val intent = Intent(requireContext(), ImovelManagementActivity::class.java)
+                intent.putExtra("IMOVEL_ID", imovel.key)
+                startActivity(intent)
+            },
+            onDeleteClick = { imovel ->
+                showDeleteConfirmationDialog(imovel)
+            }
+        )
+        binding.rvMeusImoveis.layoutManager = LinearLayoutManager(context)
+        binding.rvMeusImoveis.adapter = meusImoveisAdapter
+        binding.rvMeusImoveis.isNestedScrollingEnabled = false // To work inside a ScrollView
+    }
+
+    private fun fetchMeusImoveis(userId: String) {
+        imoveisReference.child(userId).addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                imoveisList.clear()
+                for (imovelSnapshot in snapshot.children) {
+                    val imovel = imovelSnapshot.getValue(Imovel::class.java)
+                    if (imovel != null) {
+                        imoveisList.add(imovel)
+                    }
+                }
+                meusImoveisAdapter.notifyDataSetChanged()
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                if(isAdded) {
+                    Toast.makeText(context, "Erro ao carregar seus imóveis.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        })
+    }
+    
+    private fun showDeleteConfirmationDialog(imovel: Imovel) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Excluir Imóvel")
+            .setMessage("Tem certeza de que deseja excluir este imóvel? Esta ação não pode ser desfeita.")
+            .setPositiveButton("Excluir") { _, _ ->
+                deleteImovel(imovel)
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun deleteImovel(imovel: Imovel) {
+        val userId = auth.currentUser?.uid ?: return
+        val imovelKey = imovel.key
+
+        val imovelRef = imoveisReference.child(userId).child(imovelKey)
+        val destaqueRef = FirebaseDatabase.getInstance().getReference("destaques").child(imovelKey)
+
+        imovelRef.removeValue().addOnSuccessListener {
+            destaqueRef.removeValue().addOnSuccessListener {
+                if (isAdded) {
+                    Toast.makeText(context, "Imóvel excluído com sucesso.", Toast.LENGTH_SHORT).show()
+                }
+            }.addOnFailureListener {
+                 if (isAdded) {
+                    Toast.makeText(context, "Falha ao excluir o destaque.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }.addOnFailureListener {
+            if (isAdded) {
+                Toast.makeText(context, "Falha ao excluir o imóvel.", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun openGallery() {
@@ -143,7 +227,7 @@ class PerfilUsuarioFragment : Fragment() {
                         binding.nameEditText.setText(it.nomeCompleto)
                         binding.enderecoEditText.setText(it.endereco)
 
-                        if (isAdded && !it.fotoBase64.isNullOrEmpty()) {
+                        if (isAdded && it.fotoBase64?.isNotEmpty() == true) {
                             try {
                                 val imageBytes = Base64.decode(it.fotoBase64, Base64.DEFAULT)
                                 val decodedImage = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)

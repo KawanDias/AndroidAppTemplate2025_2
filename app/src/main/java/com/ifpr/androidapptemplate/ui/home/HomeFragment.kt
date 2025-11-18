@@ -27,13 +27,12 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.ifpr.androidapptemplate.R
-import com.ifpr.androidapptemplate.baseclasses.Item
+import com.ifpr.androidapptemplate.model.Imovel
 import com.ifpr.androidapptemplate.ui.ai.AiLogicActivity
 import com.ifpr.androidapptemplate.ui.server.ImovelManagementActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -93,50 +92,42 @@ class HomeFragment : Fragment() {
     }
 
     private fun carregarImoveisDestaques(container: LinearLayout) {
-        val databaseRef = FirebaseDatabase.getInstance().getReference("destaques")
-        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+        val databaseRef = FirebaseDatabase.getInstance().getReference("destaques").orderByChild("timestamp").limitToLast(3)
 
         databaseRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (!isAdded) return
                 container.removeAllViews()
 
+                val imoveis = mutableListOf<Imovel>()
                 for (itemSnapshot in snapshot.children) {
-                    val item = itemSnapshot.getValue(Item::class.java) ?: continue
-                    item.key = itemSnapshot.key
-
-                    val itemView = LayoutInflater.from(requireContext()).inflate(R.layout.item_template, container, false)
-
-                    val imageView = itemView.findViewById<ImageView>(R.id.item_image)
-                    val enderecoView = itemView.findViewById<TextView>(R.id.item_endereco)
-                    val precoView = itemView.findViewById<TextView>(R.id.item_preco)
-
-                    enderecoView.text = item.titulo ?: item.endereco ?: "Sem Título/Endereço"
-                    formatarPreco(precoView, item.preco)
-
-                    val actionsContainer = itemView.findViewById<LinearLayout>(R.id.item_actions_container)
-                    val btnEditar = itemView.findViewById<Button>(R.id.btn_editar_imovel)
-                    val btnExcluir = itemView.findViewById<Button>(R.id.btn_excluir_imovel)
-
-                    if (currentUserId != null && item.userId == currentUserId) {
-                        actionsContainer.visibility = View.VISIBLE
-
-                        btnExcluir.setOnClickListener {
-                            showDeleteConfirmationDialog(item)
-                        }
-
-                        btnEditar.setOnClickListener {
-                            val intent = Intent(requireContext(), ImovelManagementActivity::class.java)
-                            intent.putExtra("IMOVEL_ID", item.key)
-                            startActivity(intent)
-                        }
+                    val imovel = itemSnapshot.getValue(Imovel::class.java)
+                    imovel?.key = itemSnapshot.key ?: ""
+                    if (imovel != null) {
+                        imoveis.add(imovel)
                     }
-
-                    carregarImagem(imageView, item)
-                    container.addView(itemView)
                 }
+                imoveis.reverse() // Exibir os mais recentes primeiro
 
-                if (snapshot.childrenCount == 0L && isAdded) {
+                if (imoveis.isNotEmpty()) {
+                    for (imovel in imoveis) {
+                        val itemView = LayoutInflater.from(requireContext()).inflate(R.layout.item_template, container, false)
+
+                        val imageView = itemView.findViewById<ImageView>(R.id.item_image)
+                        val enderecoView = itemView.findViewById<TextView>(R.id.item_endereco)
+                        val precoView = itemView.findViewById<TextView>(R.id.item_preco)
+
+                        enderecoView.text = imovel.titulo
+                        formatarPreco(precoView, imovel.preco)
+                        carregarImagem(imageView, imovel)
+
+                        // Oculta os botões de ação
+                        val actionsContainer = itemView.findViewById<LinearLayout>(R.id.item_actions_container)
+                        actionsContainer.visibility = View.GONE
+
+                        container.addView(itemView)
+                    }
+                } else {
                     val vazio = TextView(requireContext())
                     vazio.text = "Nenhum imóvel em destaque."
                     vazio.textAlignment = View.TEXT_ALIGNMENT_CENTER
@@ -153,41 +144,6 @@ class HomeFragment : Fragment() {
         })
     }
 
-    private fun showDeleteConfirmationDialog(item: Item) {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Excluir Imóvel")
-            .setMessage("Tem certeza que deseja excluir este imóvel? A ação não pode ser desfeita.")
-            .setPositiveButton("Excluir") { _, _ ->
-                deleteImovel(item)
-            }
-            .setNegativeButton("Cancelar", null)
-            .show()
-    }
-
-    private fun deleteImovel(item: Item) {
-        val imovelId = item.key
-        val userId = item.userId
-
-        if (imovelId == null || userId == null) {
-            if (isAdded) Toast.makeText(requireContext(), "Erro: ID do imóvel ou do usuário é inválido.", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val db = FirebaseDatabase.getInstance()
-        val imovelRef = db.getReference("imoveis").child(userId).child(imovelId)
-        val destaqueRef = db.getReference("destaques").child(imovelId)
-
-        val imovelDeleteTask = imovelRef.removeValue()
-        val destaqueDeleteTask = destaqueRef.removeValue()
-
-        Tasks.whenAll(imovelDeleteTask, destaqueDeleteTask).addOnSuccessListener {
-            if (isAdded) Toast.makeText(requireContext(), "Imóvel excluído com sucesso!", Toast.LENGTH_SHORT).show()
-        }.addOnFailureListener { exception ->
-            if (isAdded) Toast.makeText(requireContext(), "Falha ao excluir: ${exception.message}", Toast.LENGTH_LONG).show()
-            Log.e("DeleteImovel", "Erro: ", exception)
-        }
-    }
-
     private fun formatarPreco(precoView: TextView, precoValue: Double?) {
         val preco = precoValue ?: 0.0
         val formatadorMoeda = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
@@ -200,22 +156,24 @@ class HomeFragment : Fragment() {
         precoView.text = formatadorMoeda.format(preco)
     }
 
-    private fun carregarImagem(imageView: ImageView, item: Item) {
+    private fun carregarImagem(imageView: ImageView, imovel: Imovel) {
         if (!isAdded) return
-        if (!item.base64Image.isNullOrEmpty()) {
+        val firstBase64 = imovel.base64Images.firstOrNull()
+        val firstUrl = imovel.imageUrls.firstOrNull()
+
+        if (firstBase64 != null) {
             try {
-                val bytes = Base64.decode(item.base64Image, Base64.DEFAULT)
-                val bitmap = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                imageView.setImageBitmap(bitmap)
+                val bytes = Base64.decode(firstBase64, Base64.DEFAULT)
+                imageView.setImageBitmap(android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size))
             } catch (e: Exception) {
-                if (isAdded && !item.imageUrl.isNullOrEmpty()) {
-                    Glide.with(requireContext()).load(item.imageUrl).into(imageView)
+                if (isAdded && firstUrl != null) {
+                    Glide.with(requireContext()).load(firstUrl).into(imageView)
                 } else {
                     imageView.setImageResource(R.drawable.placeholder_image)
                 }
             }
-        } else if (!item.imageUrl.isNullOrEmpty()) {
-            if (isAdded) Glide.with(requireContext()).load(item.imageUrl).into(imageView)
+        } else if (firstUrl != null) {
+            if (isAdded) Glide.with(requireContext()).load(firstUrl).into(imageView)
         } else {
             imageView.setImageResource(R.drawable.placeholder_image)
         }

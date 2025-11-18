@@ -20,9 +20,9 @@
     <!-- 🏢 Lista de imóveis -->
     <fragment
         android:id="@+id/navigation_imoveis"
-        android:name="com.ifpr.androidapptemplate.ui.imoveis.ImoveisFragment"
+        android:name="com.ifpr.androidapptemplate.ui.imovel.ImovelListFragment"
         android:label="@string/title_imoveis"
-        tools:layout="@layout/fragment_imoveis" />
+        tools:layout="@layout/fragment_imovel_list" />
 
     <!-- 🗺️ Mapa de imóveis -->
     <fragment

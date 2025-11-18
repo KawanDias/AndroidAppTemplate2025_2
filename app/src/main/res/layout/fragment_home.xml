@@ -107,7 +107,7 @@
         android:id="@+id/homeFeaturedLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Seus imóveis cadastrados:"
+        android:text="Imóveis em Destaque:"
         android:textStyle="bold"
         android:textSize="18sp"
         android:layout_marginStart="16dp"

@@ -86,7 +86,7 @@
             android:layout_marginTop="32dp"
             android:text="Atualizar"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app_layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/enderecoTextInputLayout" />
 
         <Button
@@ -99,6 +99,28 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/atualizarButton" />
+
+        <TextView
+            android:id="@+id/tv_meus_imoveis_titulo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Meus Imóveis Cadastrados"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginTop="24dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/sairButton" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_meus_imoveis"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:layout_constraintTop_toBottomOf="@id/tv_meus_imoveis_titulo"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:listitem="@layout/item_meu_imovel" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

@@ -166,21 +166,25 @@ class ImovelManagementActivity : AppCompatActivity() {
 
         val formatador = NumberFormat.getInstance(Locale("pt", "BR"))
         formatador.minimumFractionDigits = 2
-        edtPreco.setText(formatador.format(imovel.preco ?: 0.0))
+        edtPreco.setText(formatador.format(imovel.preco))
 
-        if (!imovel.base64Image.isNullOrEmpty()) {
+        val firstBase64 = imovel.base64Images.firstOrNull()
+        val firstUrl = imovel.imageUrls.firstOrNull()
+
+        if (firstBase64 != null) {
             try {
-                val bytes = Base64.decode(imovel.base64Image, Base64.DEFAULT)
+                val bytes = Base64.decode(firstBase64, Base64.DEFAULT)
                 imgImovel.setImageBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.size))
+                base64Image = firstBase64 // Store for saving if not changed
             } catch (e: Exception) {
-                 if (!imovel.imageUrl.isNullOrEmpty()) {
-                    Glide.with(this).load(imovel.imageUrl).into(imgImovel)
+                 if (firstUrl != null) {
+                    Glide.with(this).load(firstUrl).into(imgImovel)
                 } else {
                     imgImovel.setImageResource(R.drawable.placeholder_image)
                 }
             }
-        } else if (!imovel.imageUrl.isNullOrEmpty()) {
-            Glide.with(this).load(imovel.imageUrl).into(imgImovel)
+        } else if (firstUrl != null) {
+            Glide.with(this).load(firstUrl).into(imgImovel)
         } else {
             imgImovel.setImageResource(R.drawable.placeholder_image)
         }
@@ -230,7 +234,8 @@ class ImovelManagementActivity : AppCompatActivity() {
         val imovel = Imovel(
             key = newImovelId, userId = uid, titulo = titulo, modalidade = modalidade, tipo = tipo, preco = preco, quartos = quartos,
             banheiros = banheiros, metragem = metragem, endereco = endereco, numero = numero, latitude = location.latitude,
-            longitude = location.longitude, base64Image = base64Image
+            longitude = location.longitude, base64Images = if (base64Image != null) listOf(base64Image!!) else emptyList(),
+            timestamp = System.currentTimeMillis()
         )
 
         val imovelSaveTask = imoveisRef.child(newImovelId).setValue(imovel)
@@ -262,6 +267,8 @@ class ImovelManagementActivity : AppCompatActivity() {
     private fun atualizarImovel(uid: String, titulo: String, modalidade: String, tipo: String, preco: Double, endereco: String, numero: String, quartos: Int, banheiros: Int, metragem: Double) {
         val id = imovelId ?: return
 
+        val imagesToSave = if (base64Image != null) listOf(base64Image!!) else currentImovel?.base64Images ?: emptyList()
+
         val updates = mutableMapOf<String, Any?>(
             "titulo" to titulo,
             "modalidade" to modalidade,
@@ -272,7 +279,8 @@ class ImovelManagementActivity : AppCompatActivity() {
             "quartos" to quartos,
             "banheiros" to banheiros,
             "metragem" to metragem,
-            "base64Image" to if (base64Image != null) base64Image else currentImovel?.base64Image
+            "base64Images" to imagesToSave,
+            "timestamp" to System.currentTimeMillis()
         )
 
         val db = FirebaseDatabase.getInstance()

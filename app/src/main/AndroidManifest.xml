@@ -41,6 +41,10 @@
         <activity android:name=".MainActivity" />
         <activity android:name=".ui.usuario.CadastroUsuarioActivity" />
         <activity android:name=".ui.ai.AiLogicActivity" />
+        <activity
+            android:name=".ui.imovel.ImovelDetailActivity"
+            android:label="Detalhes do Imóvel"
+            android:exported="false" />
 
         <!-- 🏠 Activity de gerenciamento de imóveis -->
         <activity
