@@ -1,12 +1,10 @@
 package com.ifpr.androidapptemplate.ui.server
 
-import android.Manifest
 import android.app.Activity
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.location.Location
+import android.location.Geocoder
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -18,14 +16,11 @@ import android.widget.ImageView
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.bumptech.glide.Glide
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -37,6 +32,7 @@ import com.ifpr.androidapptemplate.model.Imovel
 import com.ifpr.androidapptemplate.model.Notification
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
+import java.io.IOException
 import java.text.NumberFormat
 import java.util.Locale
 import java.util.UUID
@@ -59,8 +55,6 @@ class ImovelManagementActivity : AppCompatActivity() {
     private lateinit var btnSelectPhoto: Button
     private lateinit var btnVerMapa: Button
 
-    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
-    private var lastKnownLocation: Location? = null
     private var base64Image: String? = null
 
     private var isEditMode = false
@@ -70,7 +64,6 @@ class ImovelManagementActivity : AppCompatActivity() {
     private lateinit var requestQueue: RequestQueue
 
     companion object {
-        private const val REQUEST_LOCATION_PERMISSION = 100
         private const val REQUEST_PICK_IMAGE = 102
     }
 
@@ -94,7 +87,6 @@ class ImovelManagementActivity : AppCompatActivity() {
         btnSelectPhoto = findViewById(R.id.btn_select_photo)
         btnVerMapa = findViewById(R.id.btn_ver_mapa)
 
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
         requestQueue = Volley.newRequestQueue(this)
 
         setupSpinners()
@@ -105,7 +97,6 @@ class ImovelManagementActivity : AppCompatActivity() {
             setupEditMode()
         } else {
             supportActionBar?.title = "Cadastrar Imóvel"
-            requestLocationPermission()
         }
 
         btnSelectPhoto.setOnClickListener { selectImage() }
@@ -214,27 +205,37 @@ class ImovelManagementActivity : AppCompatActivity() {
             return
         }
 
-        if (isEditMode) {
-            atualizarImovel(uid, titulo, modalidade, tipo, precoDouble, endereco, numero, quartos, banheiros, metragem)
-        } else {
-            criarNovoImovel(uid, titulo, modalidade, tipo, precoDouble, endereco, numero, quartos, banheiros, metragem)
+        val fullAddress = "$endereco, $numero"
+        val geocoder = Geocoder(this, Locale.getDefault())
+        try {
+            val addressList = geocoder.getFromLocationName(fullAddress, 1)
+            if (addressList != null && addressList.isNotEmpty()) {
+                val address = addressList[0]
+                val latitude = address.latitude
+                val longitude = address.longitude
+
+                if (isEditMode) {
+                    atualizarImovel(uid, titulo, modalidade, tipo, precoDouble, endereco, numero, quartos, banheiros, metragem, latitude, longitude)
+                } else {
+                    criarNovoImovel(uid, titulo, modalidade, tipo, precoDouble, endereco, numero, quartos, banheiros, metragem, latitude, longitude)
+                }
+            } else {
+                Toast.makeText(this, "Endereço não encontrado. Verifique os dados.", Toast.LENGTH_LONG).show()
+            }
+        } catch (e: IOException) {
+            Toast.makeText(this, "Erro ao buscar coordenadas. Verifique sua conexão.", Toast.LENGTH_LONG).show()
         }
     }
 
-    private fun criarNovoImovel(uid: String, titulo: String, modalidade: String, tipo: String, preco: Double, endereco: String, numero: String, quartos: Int, banheiros: Int, metragem: Double) {
-        val location = lastKnownLocation ?: run {
-            Toast.makeText(this, "Localização não disponível. Tente novamente.", Toast.LENGTH_SHORT).show()
-            getLastLocation()
-            return
-        }
+    private fun criarNovoImovel(uid: String, titulo: String, modalidade: String, tipo: String, preco: Double, endereco: String, numero: String, quartos: Int, banheiros: Int, metragem: Double, latitude: Double, longitude: Double) {
         val db = FirebaseDatabase.getInstance()
         val imoveisRef = db.getReference("imoveis").child(uid)
         val newImovelId = imoveisRef.push().key ?: UUID.randomUUID().toString()
 
         val imovel = Imovel(
             key = newImovelId, userId = uid, titulo = titulo, modalidade = modalidade, tipo = tipo, preco = preco, quartos = quartos,
-            banheiros = banheiros, metragem = metragem, endereco = endereco, numero = numero, latitude = location.latitude,
-            longitude = location.longitude, base64Images = if (base64Image != null) listOf(base64Image!!) else emptyList(),
+            banheiros = banheiros, metragem = metragem, endereco = endereco, numero = numero, latitude = latitude,
+            longitude = longitude, base64Images = if (base64Image != null) listOf(base64Image!!) else emptyList(),
             timestamp = System.currentTimeMillis()
         )
 
@@ -264,7 +265,7 @@ class ImovelManagementActivity : AppCompatActivity() {
         notificationsRef.child(newNotificationId).setValue(notification)
     }
 
-    private fun atualizarImovel(uid: String, titulo: String, modalidade: String, tipo: String, preco: Double, endereco: String, numero: String, quartos: Int, banheiros: Int, metragem: Double) {
+    private fun atualizarImovel(uid: String, titulo: String, modalidade: String, tipo: String, preco: Double, endereco: String, numero: String, quartos: Int, banheiros: Int, metragem: Double, latitude: Double, longitude: Double) {
         val id = imovelId ?: return
 
         val imagesToSave = if (base64Image != null) listOf(base64Image!!) else currentImovel?.base64Images ?: emptyList()
@@ -279,6 +280,8 @@ class ImovelManagementActivity : AppCompatActivity() {
             "quartos" to quartos,
             "banheiros" to banheiros,
             "metragem" to metragem,
+            "latitude" to latitude,
+            "longitude" to longitude,
             "base64Images" to imagesToSave,
             "timestamp" to System.currentTimeMillis()
         )
@@ -299,28 +302,6 @@ class ImovelManagementActivity : AppCompatActivity() {
         }
     }
     
-    private fun requestLocationPermission() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION_PERMISSION)
-        } else {
-            getLastLocation()
-        }
-    }
-
-    private fun getLastLocation() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) return
-        fusedLocationProviderClient.lastLocation.addOnSuccessListener { location: Location? ->
-            lastKnownLocation = location
-        }
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_LOCATION_PERMISSION && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            getLastLocation()
-        }
-    }
-
     private fun buscarEnderecoPorCep() {
         val cep = edtCep.text.toString().trim()
         if (cep.length != 8) {

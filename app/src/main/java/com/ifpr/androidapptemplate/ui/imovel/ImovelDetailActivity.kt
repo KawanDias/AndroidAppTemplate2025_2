@@ -1,12 +1,14 @@
 package com.ifpr.androidapptemplate.ui.imovel
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager2.widget.ViewPager2
-import com.google.firebase.auth.FirebaseAuth
 import com.ifpr.androidapptemplate.R
 import com.ifpr.androidapptemplate.model.Imovel
 import java.text.NumberFormat
@@ -29,7 +31,7 @@ class ImovelDetailActivity : AppCompatActivity() {
             val txtBanheiros: TextView = findViewById(R.id.txt_banheiros_detail)
             val txtArea: TextView = findViewById(R.id.txt_area_detail)
             val txtEndereco: TextView = findViewById(R.id.txt_endereco_detail)
-            val btnAddPhoto: Button = findViewById(R.id.btn_add_photo)
+            val btnVerMapa: Button = findViewById(R.id.btn_ver_mapa)
 
             txtTitulo.text = imovel.titulo
             txtModalidade.text = imovel.modalidade
@@ -46,15 +48,21 @@ class ImovelDetailActivity : AppCompatActivity() {
             val isBase64 = imovel.base64Images != null
             viewPager.adapter = ImageSliderAdapter(images, isBase64)
 
-            val currentUser = FirebaseAuth.getInstance().currentUser
-            if (currentUser != null && currentUser.uid == imovel.userId) {
-                btnAddPhoto.visibility = View.VISIBLE
-            } else {
-                btnAddPhoto.visibility = View.GONE
-            }
+            btnVerMapa.visibility = View.VISIBLE
 
-            btnAddPhoto.setOnClickListener {
-                // Lógica para adicionar mais fotos
+            btnVerMapa.setOnClickListener {
+                val endereco = imovel.endereco
+                val numero = imovel.numero
+                val fullAddress = "$endereco, $numero"
+                
+                val gmmIntentUri = Uri.parse("geo:0,0?q=${Uri.encode(fullAddress)}")
+                val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+                mapIntent.setPackage("com.google.android.apps.maps")
+                if (mapIntent.resolveActivity(packageManager) != null) {
+                    startActivity(mapIntent)
+                } else {
+                    Toast.makeText(this, "Nenhum app de mapa encontrado.", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }

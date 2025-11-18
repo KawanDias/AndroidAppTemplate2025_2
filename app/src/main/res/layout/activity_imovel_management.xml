@@ -81,8 +81,8 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
             android:text="Buscar"
-            app:layout_constraintTop_toTopOf="@+id/edt_imovel_cep"
-            app:layout_constraintBottom_toBottomOf="@+id/edt_imovel_cep"
+            app:layout_constraintTop_toTopOf="@id/edt_imovel_cep"
+            app:layout_constraintBottom_toBottomOf="@id/edt_imovel_cep"
             app:layout_constraintEnd_toEndOf="parent"/>
 
         <!-- Campo Endereço do Imóvel -->
@@ -162,7 +162,7 @@
             android:contentDescription="Prévia da foto do imóvel"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/edt_imovel_metragem" />
+            app:layout_constraintTop_toBottomOf="@id/edt_imovel_metragem" />
 
         <!-- BOTÃO SELECIONAR IMAGEM -->
         <Button
