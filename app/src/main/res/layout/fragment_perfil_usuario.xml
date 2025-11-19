@@ -18,7 +18,7 @@
             android:layout_height="120dp"
             android:layout_marginTop="32dp"
             android:src="@drawable/ic_profile_black_24dp"
-            app:civ_border_color="#FF000000" 
+            app:civ_border_color="#FF000000"
             app:civ_border_width="2dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -33,7 +33,7 @@
             android:hint="Nome"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/userProfileImageView">
+            app:layout_constraintTop_toBottomOf="@+id/userProfileImageView">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/nameEditText"
@@ -51,7 +51,7 @@
             android:hint="Email"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/nameTextInputLayout">
+            app:layout_constraintTop_toBottomOf="@+id/nameTextInputLayout">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/emailEditText"
@@ -70,7 +70,7 @@
             android:hint="Endereço"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/emailTextInputLayout">
+            app:layout_constraintTop_toBottomOf="@+id/emailTextInputLayout">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/enderecoEditText"
@@ -86,8 +86,8 @@
             android:layout_marginTop="32dp"
             android:text="Atualizar"
             app:layout_constraintEnd_toEndOf="parent"
-            app_layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/enderecoTextInputLayout" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/enderecoTextInputLayout" />
 
         <Button
             android:id="@+id/sairButton"
@@ -98,29 +98,17 @@
             android:text="Sair"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/atualizarButton" />
+            app:layout_constraintTop_toBottomOf="@+id/atualizarButton" />
 
-        <TextView
-            android:id="@+id/tv_meus_imoveis_titulo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Meus Imóveis Cadastrados"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_marginTop="24dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/sairButton" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_meus_imoveis"
+        <Button
+            android:id="@+id/btn_meus_imoveis"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:layout_constraintTop_toBottomOf="@id/tv_meus_imoveis_titulo"
-            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="8dp"
+            android:text="Meus imóveis cadastrados"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            tools:listitem="@layout/item_meu_imovel" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/sairButton" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

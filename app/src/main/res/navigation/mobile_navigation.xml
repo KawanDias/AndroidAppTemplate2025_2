@@ -43,6 +43,16 @@
         android:id="@+id/navigation_profile"
         android:name="com.ifpr.androidapptemplate.ui.usuario.PerfilUsuarioFragment"
         android:label="@string/title_profile"
-        tools:layout="@layout/fragment_perfil_usuario" />
+        tools:layout="@layout/fragment_perfil_usuario">
+        <action
+            android:id="@+id/action_navigation_profile_to_todosImoveisFragment"
+            app:destination="@id/todosImoveisFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/todosImoveisFragment"
+        android:name="com.ifpr.androidapptemplate.ui.imoveis.TodosImoveisFragment"
+        android:label="Todos os Imóveis"
+        tools:layout="@layout/fragment_todos_imoveis" />
 
 </navigation>
