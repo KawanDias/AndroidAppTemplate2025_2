@@ -47,6 +47,9 @@
         <action
             android:id="@+id/action_navigation_profile_to_todosImoveisFragment"
             app:destination="@id/todosImoveisFragment" />
+        <action
+            android:id="@+id/action_navigation_profile_to_meusFavoritosFragment"
+            app:destination="@id/meusFavoritosFragment" />
     </fragment>
 
     <fragment
@@ -54,5 +57,11 @@
         android:name="com.ifpr.androidapptemplate.ui.imoveis.TodosImoveisFragment"
         android:label="Todos os Imóveis"
         tools:layout="@layout/fragment_todos_imoveis" />
+
+    <fragment
+        android:id="@+id/meusFavoritosFragment"
+        android:name="com.ifpr.androidapptemplate.ui.usuario.MeusFavoritosFragment"
+        android:label="Meus Favoritos"
+        tools:layout="@layout/fragment_meus_favoritos" />
 
 </navigation>

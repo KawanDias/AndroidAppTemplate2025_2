@@ -131,6 +131,9 @@ class PerfilUsuarioFragment : Fragment() {
         binding.btnMeusImoveis.setOnClickListener {
             findNavController().navigate(R.id.action_navigation_profile_to_todosImoveisFragment)
         }
+        binding.btnMeusFavoritos.setOnClickListener {
+            findNavController().navigate(R.id.action_navigation_profile_to_meusFavoritosFragment)
+        }
     }
 
     private fun openGallery() {
