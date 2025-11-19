@@ -13,7 +13,9 @@ import java.text.NumberFormat
 import java.util.Locale
 
 class TodosImoveisAdapter(
-    private val imoveis: List<Imovel>
+    private val imoveis: List<Imovel>,
+    private val onEditClick: (Imovel) -> Unit,
+    private val onDeleteClick: (Imovel) -> Unit
 ) : RecyclerView.Adapter<TodosImoveisAdapter.TodosImoveisViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TodosImoveisViewHolder {
@@ -44,8 +46,11 @@ class TodosImoveisAdapter(
                 }
             } ?: binding.imgMeuImovel.setImageResource(R.drawable.placeholder_image)
 
-            binding.btnEditarImovel.visibility = View.GONE
-            binding.btnExcluirImovel.visibility = View.GONE
+            binding.btnEditarImovel.visibility = View.VISIBLE
+            binding.btnExcluirImovel.visibility = View.VISIBLE
+
+            binding.btnEditarImovel.setOnClickListener { onEditClick(imovel) }
+            binding.btnExcluirImovel.setOnClickListener { onDeleteClick(imovel) }
         }
     }
 }
