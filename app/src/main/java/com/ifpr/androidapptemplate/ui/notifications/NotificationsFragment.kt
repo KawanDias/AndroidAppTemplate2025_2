@@ -1,5 +1,6 @@
 package com.ifpr.androidapptemplate.ui.notifications
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,9 +10,14 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.ifpr.androidapptemplate.databinding.FragmentNotificationsBinding
+import com.ifpr.androidapptemplate.model.Imovel
 import com.ifpr.androidapptemplate.model.Notification
+import com.ifpr.androidapptemplate.ui.imovel.ImovelDetailActivity
 
 class NotificationsFragment : Fragment() {
 
@@ -41,10 +47,34 @@ class NotificationsFragment : Fragment() {
 
         notificationsViewModel.notifications.observe(viewLifecycleOwner) { notifications ->
             if (notifications != null) {
-                recyclerView.adapter = NotificationAdapter(notifications) { notification ->
-                    deleteNotification(notification)
-                }
+                recyclerView.adapter = NotificationAdapter(notifications, {
+                    notification -> handleNotificationClick(notification)
+                }, {
+                    notification -> deleteNotification(notification)
+                })
             }
+        }
+    }
+
+    private fun handleNotificationClick(notification: Notification) {
+        notification.imovelId?.let { imovelId ->
+            val imovelRef = FirebaseDatabase.getInstance().getReference("destaques").child(imovelId)
+            imovelRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val imovel = snapshot.getValue(Imovel::class.java)
+                    if (imovel != null) {
+                        val intent = Intent(requireContext(), ImovelDetailActivity::class.java)
+                        intent.putExtra("IMOVEL_EXTRA", imovel)
+                        startActivity(intent)
+                    } else {
+                        Toast.makeText(context, "Imóvel Indisponível", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(context, "Erro ao buscar detalhes do imóvel.", Toast.LENGTH_SHORT).show()
+                }
+            })
         }
     }
 

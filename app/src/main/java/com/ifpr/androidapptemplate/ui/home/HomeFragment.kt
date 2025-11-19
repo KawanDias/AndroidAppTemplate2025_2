@@ -29,6 +29,7 @@ import com.google.firebase.database.*
 import com.ifpr.androidapptemplate.R
 import com.ifpr.androidapptemplate.model.Imovel
 import com.ifpr.androidapptemplate.ui.ai.AiLogicActivity
+import com.ifpr.androidapptemplate.ui.imovel.ImovelDetailActivity
 import com.ifpr.androidapptemplate.ui.server.ImovelManagementActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -120,6 +121,13 @@ class HomeFragment : Fragment() {
                         enderecoView.text = imovel.titulo
                         formatarPreco(precoView, imovel.preco)
                         carregarImagem(imageView, imovel)
+
+                        itemView.setOnClickListener {
+                            val intent = Intent(requireContext(), ImovelDetailActivity::class.java)
+                            intent.putExtra("IMOVEL_EXTRA", imovel)
+                            startActivity(intent)
+                        }
+
 
                         // Oculta os botões de ação
                         val actionsContainer = itemView.findViewById<LinearLayout>(R.id.item_actions_container)

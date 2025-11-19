@@ -243,14 +243,14 @@ class ImovelManagementActivity : AppCompatActivity() {
         val destaqueSaveTask = db.getReference("destaques").child(newImovelId).setValue(imovel)
 
         Tasks.whenAll(imovelSaveTask, destaqueSaveTask).addOnSuccessListener {
-            criarNotificacao(titulo, preco)
+            criarNotificacao(newImovelId, titulo, preco)
             finishWithMessage("Imóvel cadastrado com sucesso!")
         }.addOnFailureListener { e ->
             finishWithMessage("Erro ao cadastrar: ${e.message}")
         }
     }
 
-    private fun criarNotificacao(tituloImovel: String, precoImovel: Double) {
+    private fun criarNotificacao(imovelId: String, tituloImovel: String, precoImovel: Double) {
         val notificationsRef = FirebaseDatabase.getInstance().getReference("notifications")
         val newNotificationId = notificationsRef.push().key ?: return
 
@@ -258,6 +258,7 @@ class ImovelManagementActivity : AppCompatActivity() {
 
         val notification = Notification(
             id = newNotificationId,
+            imovelId = imovelId,
             content = tituloImovel,
             price = precoFormatado
         )

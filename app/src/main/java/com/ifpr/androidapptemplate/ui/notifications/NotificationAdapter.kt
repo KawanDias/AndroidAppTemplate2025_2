@@ -8,6 +8,7 @@ import com.ifpr.androidapptemplate.model.Notification
 
 class NotificationAdapter(
     private val notifications: List<Notification>,
+    private val onItemClick: (Notification) -> Unit, // Listener for item click
     private val onDeleteClick: (Notification) -> Unit
 ) : RecyclerView.Adapter<NotificationAdapter.ViewHolder>() {
 
@@ -23,6 +24,12 @@ class NotificationAdapter(
         holder.binding.notificationTitle.text = notification.title
         holder.binding.notificationContent.text = notification.content
         holder.binding.notificationPrice.text = notification.price
+
+        // Handle item click
+        holder.itemView.setOnClickListener {
+            onItemClick(notification)
+        }
+
         holder.binding.btnDeleteNotification.setOnClickListener {
             onDeleteClick(notification)
         }

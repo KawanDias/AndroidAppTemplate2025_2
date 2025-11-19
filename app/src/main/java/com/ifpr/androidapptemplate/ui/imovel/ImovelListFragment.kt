@@ -1,5 +1,6 @@
 package com.ifpr.androidapptemplate.ui.imovel
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,7 +15,7 @@ import com.google.firebase.database.ValueEventListener
 import com.ifpr.androidapptemplate.R
 import com.ifpr.androidapptemplate.model.Imovel
 
-class ImovelListFragment : Fragment() {
+class ImovelListFragment : Fragment(), ImovelAdapter.OnItemClickListener {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: ImovelAdapter
@@ -29,7 +30,7 @@ class ImovelListFragment : Fragment() {
 
         recyclerView = view.findViewById(R.id.rvImoveis)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        adapter = ImovelAdapter(imoveisList)
+        adapter = ImovelAdapter(imoveisList, this)
         recyclerView.adapter = adapter
 
         fetchImoveis()
@@ -55,5 +56,11 @@ class ImovelListFragment : Fragment() {
                 // Tratar erro
             }
         })
+    }
+
+    override fun onItemClick(imovel: Imovel) {
+        val intent = Intent(requireContext(), ImovelDetailActivity::class.java)
+        intent.putExtra("IMOVEL_EXTRA", imovel)
+        startActivity(intent)
     }
 }

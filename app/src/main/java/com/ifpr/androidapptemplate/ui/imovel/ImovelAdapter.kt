@@ -15,8 +15,12 @@ import com.ifpr.androidapptemplate.model.Imovel
 import java.text.NumberFormat
 import java.util.Locale
 
-class ImovelAdapter(private val imoveis: List<Imovel>) :
+class ImovelAdapter(private val imoveis: List<Imovel>, private val listener: OnItemClickListener) :
     RecyclerView.Adapter<ImovelAdapter.ImovelViewHolder>() {
+
+    interface OnItemClickListener {
+        fun onItemClick(imovel: Imovel)
+    }
 
     class ImovelViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val imgImovel: ImageView = view.findViewById(R.id.imgImovel)
@@ -24,6 +28,12 @@ class ImovelAdapter(private val imoveis: List<Imovel>) :
         val txtTitulo: TextView = view.findViewById(R.id.txtTitulo)
         val txtPreco: TextView = view.findViewById(R.id.txtPreco)
         val txtEndereco: TextView = view.findViewById(R.id.txtEndereco)
+
+        fun bind(imovel: Imovel, listener: OnItemClickListener) {
+            itemView.setOnClickListener {
+                listener.onItemClick(imovel)
+            }
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImovelViewHolder {
@@ -34,6 +44,8 @@ class ImovelAdapter(private val imoveis: List<Imovel>) :
 
     override fun onBindViewHolder(holder: ImovelViewHolder, position: Int) {
         val imovel = imoveis[position]
+        holder.bind(imovel, listener)
+
         holder.txtModalidade.text = imovel.modalidade
         holder.txtTitulo.text = imovel.titulo
         holder.txtEndereco.text = "${imovel.endereco}, ${imovel.numero}"
@@ -59,13 +71,6 @@ class ImovelAdapter(private val imoveis: List<Imovel>) :
             Glide.with(holder.itemView.context).load(firstUrl).into(holder.imgImovel)
         } else {
             holder.imgImovel.setImageResource(R.drawable.placeholder_image) // Imagem padrão
-        }
-
-        holder.itemView.setOnClickListener {
-            val context = holder.itemView.context
-            val intent = Intent(context, ImovelDetailActivity::class.java)
-            intent.putExtra("IMOVEL_EXTRA", imovel)
-            context.startActivity(intent)
         }
     }
 
