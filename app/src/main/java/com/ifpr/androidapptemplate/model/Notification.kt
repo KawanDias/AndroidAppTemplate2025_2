@@ -7,8 +7,9 @@ data class Notification(
     val title: String? = "Novo Imóvel Adicionado!",
     val content: String? = null,
     val price: String? = null,
-    val timestamp: Any? = ServerValue.TIMESTAMP
+    val timestamp: Any? = ServerValue.TIMESTAMP,
+    val deletedBy: MutableMap<String, Boolean> = mutableMapOf()
 ) {
     // Construtor vazio para o Firebase
-    constructor() : this(null, "Novo Imóvel Adicionado!", null, null, null)
+    constructor() : this(null, "Novo Imóvel Adicionado!", null, null, null, mutableMapOf())
 }

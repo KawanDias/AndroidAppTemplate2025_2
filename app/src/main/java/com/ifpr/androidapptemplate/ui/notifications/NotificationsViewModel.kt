@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -17,6 +18,7 @@ class NotificationsViewModel : ViewModel() {
 
     private val notificationsRef = FirebaseDatabase.getInstance().getReference("notifications")
     private var notificationsListener: ValueEventListener? = null
+    private val userId = FirebaseAuth.getInstance().currentUser?.uid
 
     init {
         loadNotifications()
@@ -28,11 +30,10 @@ class NotificationsViewModel : ViewModel() {
                 val notificationList = mutableListOf<Notification>()
                 for (notificationSnapshot in snapshot.children) {
                     val notification = notificationSnapshot.getValue(Notification::class.java)
-                    if (notification != null) {
+                    if (notification != null && userId != null && !notification.deletedBy.containsKey(userId)) {
                         notificationList.add(notification)
                     }
                 }
-                // Inverte a lista para mostrar as mais recentes primeiro
                 _notifications.value = notificationList.reversed()
             }
 
@@ -40,7 +41,6 @@ class NotificationsViewModel : ViewModel() {
                 Log.e("NotificationsViewModel", "Falha ao carregar notificações", error.toException())
             }
         }
-        // Ordena por timestamp para pegar as mais recentes
         notificationsRef.orderByChild("timestamp").addValueEventListener(notificationsListener!!)
     }
 
