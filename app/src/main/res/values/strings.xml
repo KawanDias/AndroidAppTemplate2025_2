@@ -20,4 +20,9 @@
 
     <string name="imovel2_titulo">Apartamento no centro</string>
     <string name="imovel2_preco">R$ 850.000 - São Paulo - SP</string>
+
+    <!-- Filtro de Imóveis -->
+    <string name="filter_aluguel">Aluguel</string>
+    <string name="filter_venda">Venda</string>
+    <string name="filter_todos">Todos</string>
 </resources>
