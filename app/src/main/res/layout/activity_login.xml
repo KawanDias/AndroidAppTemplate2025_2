@@ -36,7 +36,7 @@
                 android:layout_height="100dp"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginBottom="16dp"
-                android:src="@drawable/logo_kdc" />
+                android:src="@drawable/appimage" />
 
             <TextView
                 android:id="@+id/text_login_title"
