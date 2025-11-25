@@ -38,6 +38,10 @@ class NotificationsFragment : Fragment() {
 
         setupRecyclerView()
 
+        binding.buttonRemoveAll.setOnClickListener {
+            deleteAllNotifications()
+        }
+
         return root
     }
 
@@ -94,6 +98,20 @@ class NotificationsFragment : Fragment() {
                         Toast.makeText(context, "Falha ao remover notificação.", Toast.LENGTH_SHORT).show()
                     }
                 }
+        }
+    }
+
+    private fun deleteAllNotifications() {
+        if (userId != null) {
+            val notificationsRef = FirebaseDatabase.getInstance().getReference("notifications")
+            notificationsViewModel.notifications.value?.forEach { notification ->
+                if (notification.id != null) {
+                    notificationsRef.child(notification.id).child("deletedBy").child(userId).setValue(true)
+                }
+            }
+            if (isAdded) {
+                Toast.makeText(context, "Todas as notificações foram removidas.", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
