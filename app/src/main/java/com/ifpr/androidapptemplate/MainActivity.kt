@@ -16,17 +16,13 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Inicializa o View Binding
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Referência para o BottomNavigationView
         val navView: BottomNavigationView = binding.navView
 
-        // Controlador de navegação (NavHost)
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
 
-        // Define as telas principais que não mostrarão o botão "voltar"
         val appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.navigation_home,
@@ -36,12 +32,10 @@ class MainActivity : AppCompatActivity() {
             )
         )
 
-        // Configura o título da barra e a navegação inferior
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
     }
 
-    // Garante que o botão "voltar" na AppBar funcione corretamente
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
         return navController.navigateUp() || super.onSupportNavigateUp()

@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import android.graphics.Rect
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -13,13 +14,13 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
-import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.UserProfileChangeRequest
@@ -41,6 +42,23 @@ class PerfilUsuarioFragment : Fragment() {
 
     private var selectedImageBase64: String? = null
 
+    private val keyboardVisibilityListener = object : ViewTreeObserver.OnGlobalLayoutListener {
+        private val r = Rect()
+        override fun onGlobalLayout() {
+            view?.getWindowVisibleDisplayFrame(r)
+            val screenHeight = view?.rootView?.height ?: 0
+            val keypadHeight = screenHeight - r.bottom
+
+            val navView = activity?.findViewById<BottomNavigationView>(R.id.nav_view)
+            if (keypadHeight > screenHeight * 0.15) { // Keyboard is open
+                navView?.visibility = View.GONE
+            } else { // Keyboard is closed
+                navView?.visibility = View.VISIBLE
+            }
+        }
+    }
+
+
     private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             val selectedImageUri = result.data?.data
@@ -48,7 +66,7 @@ class PerfilUsuarioFragment : Fragment() {
                 if (isAdded) {
                     try {
                         val correctedBitmap = handleImageOrientation(selectedImageUri)
-                        
+
                         Glide.with(this)
                             .load(correctedBitmap)
                             .placeholder(R.drawable.ic_profile_black_24dp)
@@ -76,16 +94,16 @@ class PerfilUsuarioFragment : Fragment() {
         inputStream?.close()
 
         val exifInterfaceInputStream = requireContext().contentResolver.openInputStream(uri)
-        val exifInterface = exifInterfaceInputStream?.let { ExifInterface(it) }
+        val exifInterface = exifInterfaceInputStream?.let { androidx.exifinterface.media.ExifInterface(it) }
         exifInterfaceInputStream?.close()
 
-        val orientation = exifInterface?.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL) ?: ExifInterface.ORIENTATION_NORMAL
+        val orientation = exifInterface?.getAttributeInt(androidx.exifinterface.media.ExifInterface.TAG_ORIENTATION, androidx.exifinterface.media.ExifInterface.ORIENTATION_NORMAL) ?: androidx.exifinterface.media.ExifInterface.ORIENTATION_NORMAL
 
         val matrix = Matrix()
         when (orientation) {
-            ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
-            ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
-            ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
+            androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
+            androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
+            androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
         }
 
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
@@ -113,11 +131,13 @@ class PerfilUsuarioFragment : Fragment() {
             }
             return
         }
-        
+
         usersReference = FirebaseDatabase.getInstance().getReference("users")
 
         setupUI(currentUser)
         loadUserProfile(currentUser)
+
+        view.viewTreeObserver.addOnGlobalLayoutListener(keyboardVisibilityListener)
     }
 
     private fun setupUI(currentUser: FirebaseUser) {
@@ -128,6 +148,7 @@ class PerfilUsuarioFragment : Fragment() {
         binding.userProfileImageView.setOnClickListener { openGallery() }
         binding.atualizarButton.setOnClickListener { updateUserProfile() }
         binding.sairButton.setOnClickListener { signOut() }
+        binding.btnMeusImoveis.isEnabled = false
         binding.btnMeusImoveis.setOnClickListener {
             findNavController().navigate(R.id.action_navigation_profile_to_todosImoveisFragment)
         }
@@ -165,11 +186,17 @@ class PerfilUsuarioFragment : Fragment() {
                 } else {
                     binding.nameEditText.setText(currentUser.displayName)
                 }
+                if(isAdded) {
+                    binding.btnMeusImoveis.isEnabled = true
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {
                 Log.e("FirebaseError", "Erro ao recuperar dados: ${error.message}")
-                if (isAdded) Toast.makeText(context, "Erro ao carregar perfil", Toast.LENGTH_SHORT).show()
+                if (isAdded) {
+                    Toast.makeText(context, "Erro ao carregar perfil", Toast.LENGTH_SHORT).show()
+                    binding.btnMeusImoveis.isEnabled = true
+                }
             }
         })
     }
@@ -189,7 +216,7 @@ class PerfilUsuarioFragment : Fragment() {
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                     if (isAdded) Toast.makeText(context, "Falha ao manter foto existente.", Toast.LENGTH_SHORT).show()
+                    if (isAdded) Toast.makeText(context, "Falha ao manter foto existente.", Toast.LENGTH_SHORT).show()
                 }
             })
         }
@@ -239,6 +266,8 @@ class PerfilUsuarioFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        view?.viewTreeObserver?.removeOnGlobalLayoutListener(keyboardVisibilityListener)
+        activity?.findViewById<BottomNavigationView>(R.id.nav_view)?.visibility = View.VISIBLE
         _binding = null
     }
 }

@@ -38,7 +38,8 @@
         </activity>
 
         <!-- 📱 Outras activities -->
-        <activity android:name=".MainActivity" />
+        <activity android:name=".MainActivity"
+            android:windowSoftInputMode="adjustResize" />
         <activity android:name=".ui.usuario.CadastroUsuarioActivity" />
         <activity android:name=".ui.ai.AiLogicActivity" />
         <activity
