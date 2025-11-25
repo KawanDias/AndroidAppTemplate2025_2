@@ -48,7 +48,6 @@ class HomeFragment : Fragment() {
     private lateinit var btnOpenMaps: Button
     private lateinit var btnOpenWaze: Button
     private lateinit var btnManageServers: Button
-    private lateinit var btnOpenTrackingMap: Button
 
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1
@@ -76,11 +75,6 @@ class HomeFragment : Fragment() {
         btnManageServers.setOnClickListener {
             val intent = Intent(requireContext(), ImovelManagementActivity::class.java)
             startActivity(intent)
-        }
-
-        btnOpenTrackingMap = view.findViewById(R.id.btnOpenTrackingMap)
-        btnOpenTrackingMap.setOnClickListener {
-            findNavController().navigate(R.id.action_navigation_home_to_imovelMapFragment)
         }
 
         val fab = view.findViewById<FloatingActionButton>(R.id.fab_ai)
