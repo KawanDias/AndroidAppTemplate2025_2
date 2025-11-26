@@ -3,18 +3,12 @@ package com.ifpr.androidapptemplate.ui.imovel
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.PopupMenu
-import androidx.core.view.MenuHost
-import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.chip.ChipGroup
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -29,6 +23,9 @@ class ImovelListFragment : Fragment(), ImovelAdapter.OnItemClickListener {
     private var imoveisList: MutableList<Imovel> = mutableListOf()
     private var allImoveisList: MutableList<Imovel> = mutableListOf()
 
+    private var currentModalidadeFilter: String = "Todos"
+    private var currentTipoFilter: String = "Todos os tipos"
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -41,43 +38,33 @@ class ImovelListFragment : Fragment(), ImovelAdapter.OnItemClickListener {
         adapter = ImovelAdapter(imoveisList, this)
         recyclerView.adapter = adapter
 
-        setupMenu()
+        setupFilterListeners(view)
         fetchImoveis()
 
         return view
     }
 
-    private fun setupMenu() {
-        (requireActivity() as MenuHost).addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.imovel_list_toolbar_menu, menu)
+    private fun setupFilterListeners(view: View) {
+        val chipGroupModalidade = view.findViewById<ChipGroup>(R.id.chip_group_modalidade)
+        chipGroupModalidade.setOnCheckedChangeListener { _, checkedId ->
+            currentModalidadeFilter = when (checkedId) {
+                R.id.chip_venda -> "Venda"
+                R.id.chip_aluguel -> "Aluguel"
+                else -> "Todos"
             }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                if (menuItem.itemId == R.id.action_filter) {
-                    val anchorView = requireActivity().findViewById<View>(R.id.action_filter)
-                    showFilterMenu(anchorView)
-                    return true
-                }
-                return false
-            }
-        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
-    }
-
-    private fun showFilterMenu(anchor: View) {
-        val popup = PopupMenu(requireContext(), anchor)
-        popup.menuInflater.inflate(R.menu.filter_menu, popup.menu)
-
-        popup.setOnMenuItemClickListener { item ->
-            when (item.itemId) {
-                R.id.filter_todos -> filterImoveis("Todos")
-                R.id.filter_aluguel -> filterImoveis("Aluguel")
-                R.id.filter_venda -> filterImoveis("Venda")
-            }
-            true
+            applyFilters()
         }
 
-        popup.show()
+        val chipGroupTipo = view.findViewById<ChipGroup>(R.id.chip_group_tipo)
+        chipGroupTipo.setOnCheckedChangeListener { _, checkedId ->
+            currentTipoFilter = when (checkedId) {
+                R.id.chip_casa -> "Casa"
+                R.id.chip_apartamento -> "Apartamento"
+                R.id.chip_condominio -> "Condomínio"
+                else -> "Todos os tipos"
+            }
+            applyFilters()
+        }
     }
 
     private fun fetchImoveis() {
@@ -91,7 +78,7 @@ class ImovelListFragment : Fragment(), ImovelAdapter.OnItemClickListener {
                         allImoveisList.add(imovel)
                     }
                 }
-                filterImoveis("Todos") // Exibe todos por padrão
+                applyFilters() // Aplicar filtros iniciais
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -100,13 +87,21 @@ class ImovelListFragment : Fragment(), ImovelAdapter.OnItemClickListener {
         })
     }
 
-    private fun filterImoveis(filter: String) {
-        imoveisList.clear()
-        when (filter) {
-            "Todos" -> imoveisList.addAll(allImoveisList)
-            "Aluguel" -> imoveisList.addAll(allImoveisList.filter { it.modalidade == "Aluguel" })
-            "Venda" -> imoveisList.addAll(allImoveisList.filter { it.modalidade == "Venda" })
+    private fun applyFilters() {
+        var filteredList: List<Imovel> = allImoveisList
+
+        // Filtrar por modalidade
+        if (currentModalidadeFilter != "Todos") {
+            filteredList = filteredList.filter { it.modalidade == currentModalidadeFilter }
         }
+
+        // Filtrar por tipo
+        if (currentTipoFilter != "Todos os tipos") {
+            filteredList = filteredList.filter { it.tipo == currentTipoFilter }
+        }
+
+        imoveisList.clear()
+        imoveisList.addAll(filteredList)
         adapter.notifyDataSetChanged()
     }
 
