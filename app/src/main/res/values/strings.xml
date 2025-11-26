@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- App -->
-    <string name="app_name">AndroidAppTemplate</string>
+    <string name="app_name">IFFINDER</string>
 
     <!-- Títulos de navegação -->
     <string name="title_home">Home</string>
