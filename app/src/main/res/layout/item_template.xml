@@ -1,82 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="12dp"
+    android:layout_marginStart="16dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginEnd="16dp"
     android:layout_marginBottom="8dp"
-    android:background="@drawable/card_background"
-    android:elevation="2dp"
-    android:gravity="center_vertical">
+    app:cardElevation="4dp"
+    app:cardCornerRadius="12dp">
 
-    <!-- 1. IMAGEM -->
-    <ImageView
-        android:id="@+id/item_image"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:scaleType="centerCrop"
-        android:layout_marginEnd="12dp"
-        android:background="#EFEFEF"
-        android:contentDescription="Foto do imóvel" />
-
-    <!-- 2. CONTAINER DE TEXTO (Vertical) -->
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="vertical">
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="16dp">
 
-        <!-- TÍTULO/ENDEREÇO -->
-        <TextView
-            android:id="@+id/item_endereco"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="#333333"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:maxLines="2"
-            android:ellipsize="end"
-            android:text="Título do Imóvel ou Endereço Completo" />
+        <!-- 1. IMAGEM -->
+        <ImageView
+            android:id="@+id/item_image"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginEnd="16dp"
+            android:background="?attr/colorSurfaceVariant"
+            android:contentDescription="Foto do imóvel"
+            android:scaleType="centerCrop" />
 
-        <!-- PREÇO -->
-        <TextView
-            android:id="@+id/item_preco"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textColor="@color/purple_700"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:text="R$ 0,00" />
-
-        <!-- BOTÕES DE AÇÃO (CRUD) -->
+        <!-- 2. CONTAINER DE TEXTO (Vertical) -->
         <LinearLayout
-            android:id="@+id/item_actions_container"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="8dp"
-            android:visibility="gone">  <!-- Começa invisível por padrão -->
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-            <Button
-                android:id="@+id/btn_editar_imovel"
-                style="?android:attr/buttonBarButtonStyle"
-                android:layout_width="0dp"
-                android:layout_height="40dp"
-                android:layout_weight="1"
-                android:text="Editar"
-                android:layout_marginEnd="4dp"/>
+            <!-- TÍTULO/ENDEREÇO -->
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/item_endereco"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:textColor="?attr/colorOnSurface"
+                tools:text="Título do Imóvel ou Endereço Completo" />
 
-            <Button
-                android:id="@+id/btn_excluir_imovel"
-                style="?android:attr/buttonBarButtonStyle"
-                android:layout_width="0dp"
-                android:layout_height="40dp"
-                android:layout_weight="1"
-                android:text="Excluir"
-                android:textColor="@android:color/holo_red_light"
-                android:layout_marginStart="4dp"/>
+            <!-- PREÇO -->
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/item_preco"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textAppearance="?attr/textAppearanceBodyLarge"
+                android:textColor="?attr/colorPrimary"
+                android:textStyle="bold"
+                tools:text="R$ 0,00" />
+
+            <!-- BOTÕES DE AÇÃO (CRUD) -->
+            <LinearLayout
+                android:id="@+id/item_actions_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_editar_imovel"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="4dp"
+                    android:layout_weight="1"
+                    android:text="Editar" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_excluir_imovel"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_weight="1"
+                    android:text="Excluir"
+                    android:textColor="@android:color/holo_red_light" />
+            </LinearLayout>
+
         </LinearLayout>
-
     </LinearLayout>
-</LinearLayout>
+</com.google.android.material.card.MaterialCardView>
